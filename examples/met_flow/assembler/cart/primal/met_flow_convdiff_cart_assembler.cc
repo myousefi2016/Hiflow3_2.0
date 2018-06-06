@@ -1,0 +1,392 @@
+// Copyright (C) 2011-2017 Vincent Heuveline
+//
+// HiFlow3 is free software: you can redistribute it and/or modify it under the
+// terms of the European Union Public Licence (EUPL) v1.2 as published by the
+// European Union or (at your option) any later version.
+//
+// HiFlow3 is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the European Union Public Licence (EUPL) v1.2 for more
+// details.
+//
+// You should have received a copy of the European Union Public Licence (EUPL) v1.2
+// along with HiFlow3.  If not, see <https://joinup.ec.europa.eu/page/eupl-text-11-12>.
+
+#include "met_flow_convdiff_cart_assembler.h"
+
+template<int DIM, class DataType>
+MetFlowConvDiffCartAssembler<DIM, DataType>::MetFlowConvDiffCartAssembler ( )
+: MetFlowConvDiffAssembler<DIM, DataType>( )
+{
+}
+
+/// ********************************************************
+/// General Assembly routines 
+/// ********************************************************
+
+template<int DIM, class DataType>
+void MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_matrix ( const Element<DataType>& element, LocalMatrix& lm ) const
+{
+    const int total_dofs = this->num_dofs_total ( );
+    lm.Resize ( total_dofs, total_dofs );
+    lm.Zeros ( );
+
+    if ( this->mode_ == PRIMAL )
+    {
+        MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_matrix_primal ( element, lm );
+    }
+    else
+    {
+        interminable_assert ( 0 );
+    }
+}
+
+template<int DIM, class DataType>
+void MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_vector ( const Element<DataType>& element, LocalVector& lv ) const
+{
+    const int total_dofs = this->num_dofs_total ( );
+    lv.clear ( );
+    lv.resize ( total_dofs, 0. );
+
+    if ( this->vector_asm_mode_ == VECTOR_STD )
+    {
+        if ( this->mode_ == PRIMAL )
+        {
+            MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_vector_primal ( element, lv );
+        }
+        else
+        {
+            interminable_assert ( 0 );
+        }
+    }
+    else if ( this->vector_asm_mode_ == VECTOR_GOAL )
+    {
+        MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_vector_goal ( element, lv );
+    }
+}
+
+template<int DIM, class DataType>
+void MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_scalar ( const Element<DataType>& element, DataType& ls ) const
+{
+    if ( this->sca_mode_ == GOAL_INT )
+    {
+        MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_scalar_goal_int ( element, ls );
+    }
+    if ( this->sca_mode_ == GOAL_FIN )
+    {
+        MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_scalar_goal_fin ( element, ls );
+    }
+}
+
+/// ********************************************************
+/// Assembly routines for primal problem
+/// ********************************************************
+
+template<int DIM, class DataType>
+void MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_matrix_primal ( const Element<DataType>& element, LocalMatrix& lm ) const
+{
+    const int t_var = 0;
+    const DataType dt = this->dT_pc_;
+    const int num_q = this->num_quadrature_points ( );
+
+    // loop over quadrature points  
+    for ( int q = 0; q < num_q; ++q )
+    {
+        const DataType wq = this->w ( q );
+        const DataType dJ = std::fabs ( this->detJ ( q ) );
+
+        for ( int i = 0; i<this->num_dofs ( t_var ); ++i )
+        {
+            for ( int j = 0; j<this->num_dofs ( t_var ); ++j )
+            {
+
+                // ***********************************************************************
+                // TIME-DERIVATIVE: theta_d_dt_u * int{(u,v)} 
+                lm ( this->dof_index ( i, t_var ), this->dof_index ( j, t_var ) ) += wq
+                        * this->theta_d_dt_u_
+                        * this->phi ( j, q, t_var )
+                        * this->phi ( i, q, t_var )
+                        * dJ;
+
+                // ***********************************************************************
+                // Thermal diffusion: theta1 * kappa * dT * int{grad{u}:grad{v})
+                DataType tmp = this->grad_phi ( i, q, t_var )[0] * this->grad_phi ( j, q, t_var )[0]
+                        + this->grad_phi ( i, q, t_var )[1] * this->grad_phi ( j, q, t_var )[1];
+                if ( DIM == 3 ) tmp += this->grad_phi ( i, q, t_var )[2] * this->grad_phi ( j, q, t_var )[2];
+
+                lm ( this->dof_index ( i, t_var ), this->dof_index ( j, t_var ) ) += wq
+                        * dt
+                        * this->theta_diff_c_
+                        * this->kappa_
+                        * tmp
+                        * dJ;
+
+                // ***********************************************************************
+                // reaction: lambda * int{(u,v)} 
+                lm ( this->dof_index ( i, t_var ), this->dof_index ( j, t_var ) ) += wq
+                        * dt
+                        * this->lambda_
+                        * this->theta_rea_c_
+                        * this->phi ( j, q, t_var )
+                        * this->phi ( i, q, t_var )
+                        * dJ;
+            }
+        }
+
+        // Nonlinear advection part one: linearized velocity: (0.5 *) theta_heat_adv1 * dT * int{(u_c * grad{T}, v)} 
+        //                                                     + (0.5) * theta_heat_adv1 * dT * int{(u_p * grad{T}, v)}
+        for ( int j = 0; j<this->num_dofs ( t_var ); ++j )
+        {
+            DataType tmp = 0.0;
+            for ( int s = 0; s < DIM; ++s )
+            {
+                tmp += ( this->theta_adv_cc_ * this->conv_[s][q] + this->theta_adv_pc_ * this->conv_prev_[s][q] )
+                        * this->grad_phi ( j, q, t_var )[s];
+            }
+            //std::cout << this->conv_[0][q] << " " << this->conv_[1][q] << " " << this->conv_prev_[0][q] << " " << this->conv_prev_[1][q] << std::endl;
+            for ( int i = 0; i<this->num_dofs ( t_var ); ++i )
+            {
+                lm ( this->dof_index ( i, t_var ), this->dof_index ( j, t_var ) ) += wq
+                        * dt
+                        * tmp
+                        * this->gamma_
+                        * this->phi ( i, q, t_var )
+                        * dJ;
+            }
+        }
+    }
+}
+
+template<int DIM, class DataType>
+void MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_vector_primal ( const Element<DataType>& element, LocalVector& lv ) const
+{
+    const int num_q = this->num_quadrature_points ( );
+    const int t_var = 0;
+
+    DataType sign = 1.0;
+    const DataType dt = this->dT_pc_;
+
+    // loop over quadrature points
+    for ( int q = 0; q < num_q; ++q )
+    {
+        const DataType wq = this->w ( q );
+        const DataType dJ = std::abs ( this->detJ ( q ) );
+        DataType sol_c;
+        DataType sol_p;
+
+        // temperature    
+        sol_c = this->solP_[t_var][q];
+        sol_p = this->solP_prev_[t_var][q];
+
+        Vec<DIM, DataType> grad_sol_c;
+        Vec<DIM, DataType> grad_sol_p;
+
+        for ( int d = 0; d < DIM; d++ )
+        {
+            grad_sol_c[d] = this->grad_solP_[t_var][q][d];
+            grad_sol_p[d] = this->grad_solP_prev_[t_var][q][d];
+        }
+
+        // **********************************************************************
+        // TIME DERIVATIVE: theta_d_dt_u * ((T_c - T_p),v) 
+
+        for ( int i = 0; i<this->num_dofs ( t_var ); ++i )
+        {
+            lv[this->dof_index ( i, t_var )] += wq
+                    * this->theta_d_dt_u_ // 0. or 1. -> stationary or instationary configuration
+                    * ( sol_c - sol_p ) // current - previous
+                    * this->phi ( i, q, t_var )
+                    * dJ;
+        }
+
+        // **********************************************************************
+        // LAPLACE: theta_heat_diff_c * dT * diff * int{grad{T_c} : grad{v}} + theta_heat_diff_p * dT * diff * int{grad{T_p} : grad{v}}
+
+        for ( int i = 0; i<this->num_dofs ( t_var ); ++i )
+        {
+            DataType laplace_c = 0.0;
+            for ( int s = 0; s < DIM; s++ ) laplace_c += this->grad_phi ( i, q, t_var )[s] * grad_sol_c[s];
+
+            DataType laplace_p = 0.0;
+            for ( int s = 0; s < DIM; s++ ) laplace_p += this->grad_phi ( i, q, t_var )[s] * grad_sol_p[s];
+
+            lv[this->dof_index ( i, t_var )] += wq
+                    * dt
+                    * this->kappa_
+                    * ( this->theta_diff_c_ * laplace_c
+                    + this->theta_diff_p_ * laplace_p )
+                    * dJ;
+        }
+
+        // **********************************************************************
+        // CONVECTIVE TERM 
+
+        //    (0.5)* theta_heat_adv_cc * dT * int{(u_c * grad{T_c}, v)} + theta_heat_adv_pc * dT * int{(u_p * grad{T_c}, v)}
+        //  + (0.5)* theta_heat_adv_cp * dT * int{(u_c * grad{T_p}, v)} + theta_heat_adv_pp * dT * int{(u_p * grad{T_p}, v)}
+        DataType convection = 0.0;
+        for ( int s = 0; s < DIM; ++s )
+        {
+            convection += ( this->conv_[s][q] * grad_sol_c[s] * this->theta_adv_cc_
+                    + this->conv_[s][q] * grad_sol_p[s] * this->theta_adv_cp_
+                    + this->conv_prev_[s][q] * grad_sol_c[s] * this->theta_adv_pc_
+                    + this->conv_prev_[s][q] * grad_sol_p[s] * this->theta_adv_pp_ );
+        }
+
+        for ( int i = 0; i < this->num_dofs ( t_var ); ++i )
+        {
+            lv[this->dof_index ( i, t_var )] += wq
+                    * dt
+                    * convection
+                    * this->gamma_
+                    * this->phi ( i, q, t_var )
+                    * dJ;
+
+        }
+
+        // ****************************************************************************
+        // reaction term
+
+        for ( int i = 0; i<this->num_dofs ( t_var ); ++i )
+        {
+            lv[this->dof_index ( i, t_var )] += wq
+                    * this->lambda_
+                    * dt
+                    * ( this->theta_rea_c_ * sol_c + this->theta_rea_p_ * sol_p )
+                    * this->phi ( i, q, t_var )
+                    * dJ;
+        }
+
+        // ****************************************************************************
+        // source term
+        for ( int i = 0; i<this->num_dofs ( t_var ); ++i )
+        {
+            lv[this->dof_index ( i, t_var )] -= wq
+                    * dt
+                    * ( this->theta_sou_c_ * this->source_[t_var][q]
+                    + this->theta_sou_p_ * this->source_prev_[t_var][q] )
+                    * this->phi ( i, q, t_var )
+                    * dJ;
+        }
+        /* 
+         if (this->source_[t_var][q] != 0.)
+         {
+             std::cout << this->source_[t_var][q] << " / " << this->source_prev_[t_var][q] << " " << this->x(q)[0] << " " << this->x(q)[1] << std::endl;
+         }
+         * */
+
+    }
+}
+
+/// Initial condition for dual problem
+
+template<int DIM, class DataType>
+void MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_vector_goal ( const Element<DataType>& element, LocalVector& lv ) const
+{
+    const int t_var = 0;
+    const int num_vars = 1;
+
+    const int num_q = this->num_quadrature_points ( );
+
+    // loop over quadrature points  
+    for ( int q = 0; q < num_q; ++q )
+    {
+        const DataType wq = this->w ( q );
+        const DataType dJ = std::fabs ( this->detJ ( q ) );
+
+        ParametersFinalType<DIM, DataType> p;
+        p.solP.resize ( num_vars );
+        p.grad_solP.resize ( num_vars );
+
+        p.solP[t_var] = this->solP_[t_var][q];
+
+        for ( int d = 0; d < DIM; d++ )
+        {
+            p.grad_solP[t_var][d] = this->grad_solP_[t_var][q][d];
+        }
+
+        p.x = this->x ( q );
+
+        p.var = t_var;
+        for ( int i = 0; i<this->num_dofs ( t_var ); ++i )
+        {
+            p.phi = this->phi ( i, q, t_var );
+            p.grad_phi = this->grad_phi ( i, q, t_var );
+            lv[this->dof_index ( i, t_var )] += -wq * this->goal_functional_->j_final_type ( p ) * dJ;
+        }
+    }
+}
+
+/// squared L2- W1,2 norm of complete solution vector 
+
+template<int DIM, class DataType>
+void MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_scalar_goal_int ( const Element<DataType>& element, DataType& ls ) const
+{
+
+    const int num_q = this->num_quadrature_points ( );
+    const int t_var = 0;
+    const int num_vars = 1;
+
+    // loop over quadrature points
+    for ( int q = 0; q < num_q; ++q )
+    {
+        const DataType wq = this->w ( q );
+        const DataType dJ = std::abs ( this->detJ ( q ) );
+
+        std::vector<DataType> solP_c ( num_vars );
+
+        solP_c[t_var] = this->solP_[t_var][q];
+
+        std::vector< Vec<DIM, DataType> > grad_solP_c ( num_vars );
+        for ( int d = 0; d < DIM; d++ )
+        {
+            grad_solP_c[t_var][d] = this->grad_solP_[t_var][q][d];
+        }
+
+        ParametersEvalType<DIM, DataType> gp;
+        gp.x = this->x ( q );
+        gp.absolute_time = this->t_;
+        gp.solP = solP_c;
+        gp.grad_solP = grad_solP_c;
+
+        ls += wq * this->goal_functional_->j_force_eval ( gp ) * dJ;
+    }
+}
+
+/// squared L2- W1,2 norm of complete solution vector 
+
+template<int DIM, class DataType>
+void MetFlowConvDiffCartAssembler<DIM, DataType>::assemble_local_scalar_goal_fin ( const Element<DataType>& element, DataType& ls ) const
+{
+
+    const int num_q = this->num_quadrature_points ( );
+    const int t_var = 0;
+    const int num_vars = 1;
+
+    // loop over quadrature points
+    for ( int q = 0; q < num_q; ++q )
+    {
+        const DataType wq = this->w ( q );
+        const DataType dJ = std::abs ( this->detJ ( q ) );
+
+        std::vector<DataType> solP_c ( num_vars );
+
+        solP_c[t_var] = this->solP_[t_var][q];
+
+        std::vector< Vec<DIM, DataType> > grad_solP_c ( num_vars );
+        for ( int d = 0; d < DIM; d++ )
+        {
+            grad_solP_c[t_var][d] = this->grad_solP_[t_var][q][d];
+        }
+
+        ParametersEvalType<DIM, DataType> gp;
+        gp.x = this->x ( q );
+        gp.solP = solP_c;
+        gp.grad_solP = grad_solP_c;
+
+        ls += wq * this->goal_functional_->j_final_eval ( gp ) * dJ;
+    }
+}
+
+template class MetFlowConvDiffCartAssembler<2, double>;
+template class MetFlowConvDiffCartAssembler<3, double>;
+

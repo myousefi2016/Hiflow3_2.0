@@ -1,0 +1,32 @@
+<Param>
+  <Application>
+    <Diffusion>0.01</Diffusion>
+  </Application>
+  <Mesh>
+    <Filename>unit_square.inp</Filename>
+    <RefinementLevel>5</RefinementLevel>
+  </Mesh>
+  <LinearAlgebra>
+    <NameMatrix>CoupledMatrix</NameMatrix>
+    <NameVector>CoupledVector</NameVector>
+    <Platform>CPU</Platform>
+    <Implementation>Naive</Implementation>
+    <MatrixFormat>CSR</MatrixFormat>
+  </LinearAlgebra>
+  <FiniteElements>  
+    <Degree>1</Degree>
+  </FiniteElements>
+  <LinearSolver>
+    <Name>GMRES</Name>
+    <Method>NoPreconditioning</Method>
+    <MaxIterations>5000</MaxIterations>
+    <AbsTolerance>1.e-14</AbsTolerance>
+    <RelTolerance>1.e-8</RelTolerance>
+    <DivTolerance>1.e6</DivTolerance>
+    <SizeBasis>50</SizeBasis>
+  </LinearSolver>
+  <Output>
+    <LogFilename>stabilized_convdiff_tutorial_info_log</LogFilename>
+    <DebugFilename>stabilized_convdiff_tutorial_debug_log</DebugFilename>
+  </Output>
+</Param>

@@ -1,0 +1,20 @@
+/** 
+\mainpage notitle
+
+<h1>API Reference </h1><h3 class="version">@HIFLOW_VERSION@</h3><div align="center">
+<img src="../images/hiflow3_logo.png" alt="hiflow3_logo.png"/>
+</div>
+<p> This manual documents the HiFlow³ API. Use the buttons above to browse this reference or use the links provided below.</p>
+
+<ul>
+<li>\ref getting_started</li>
+</ul>
+
+**/
+
+
+
+
+
+
+

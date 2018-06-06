@@ -1,0 +1,172 @@
+namespace hiflow {
+/**
+\page getting_started Getting Started Quickly
+@{
+
+The use of any tool requires a learning effort. There are several ways
+to go about this task, and how we learn best is very individual. For
+some, reading documentation is the most efficient way to learn, for
+others, having somebody explain things works better. Many people
+prefer trying out the use of a tool themselves. Whereas most of the
+documentation here is a reference to the capabilities of HiFlow, this
+page is geared towards those who want to get their hands dirty right
+away. It is meant as a guide into the reference documentation,
+pointing you to the functions and classes you will need to accomplish basic tasks.
+
+<ul>
+<li>\ref question_create_mesh "How do I create a mesh?"</li>
+<li>\ref question_assemble_system "How do I assemble the linear system?"</li>
+<li>\ref question_essential_bc "How can I treat essential boundary conditions?"</li>
+<li>\ref question_essential_bc "What is a function object?"</li>
+</ul>
+
+<H2>How do I create a mesh?</H2>
+\anchor question_create_mesh
+
+There are several ways to create a mesh. One possibility that is
+especially suited to simple geometries, is to define the vertices and
+cells directly in the code, and then use refinement to increase the
+number of cells. To do this, one must use a MeshBuilder object. This
+objects lets the user define vertices and cells, and then constructs
+the mesh with the function build().
+
+For more complex geometries, it is possible to use external tools to
+create descriptions of meshes that are written to files, which can
+then be read into HiFlow. The supported file formats is the well-known
+UCD (".inp") format created by AVS, and the unstructured grid formats
+".vtu" and ".pvtu" defined in the VTK project. The easiest method for
+both formats is to use the function read_mesh_from_file().
+
+The second VTK format is a parallel format that describes a mesh and
+associated data in a sequence of files, one of which is to be read in
+on each process. Reading in these files requires passing a pointer to a MPI
+communicator to the read_mesh_from_file() function, in the
+sequential case, this parameter can be 0.
+
+If one does not have a parallel file, one can read in the mesh on one
+process, partition it, and distribute it to the other processes, using
+the function partition_and_distribute(). Regardless of which method
+one uses, for parallel computation, it is necessary to define a layer
+of ghost cells for exchanging information on the mesh between the
+processes. This can be accomplished with the compute_ghost_cells() function.
+
+\see mesh::MeshBuilder
+\see mesh::MeshDbViewBuilder
+\see read_mesh_from_file()
+\see partition_and_distribute()
+\see compute_ghost_cells()
+
+<H2>How do I assemble the linear system corresponding to a variational problem?</H2>
+\anchor question_assemble_system
+
+Global assembly of matrices and vectors can be performed using the
+functions hiflow::GlobalAssembler::assemble_matrix() and hiflow::GlobalAssembler::assemble_vector(). There is also a
+function hiflow::GlobalAssembler::integrate_scalar() for integrating over the entire
+domain. The details of the variational problem is determined by the
+local assembly executed on each cell. This is defined through a
+function object that the user passes to the global assembly functions.
+
+A more complete description is provided in \ref concept_assembly "the concept overview for assembly and integration" .
+
+\see hiflow::GlobalAssembler::assemble_matrix()
+\see hiflow::GlobalAssembler::assemble_vector()
+\see hiflow::GlobalAssembler::integrate_scalar()
+\see AssemblyAssistant
+
+<H2>How can I modify the linear system to incorporate essential boundary conditions?</H2>
+\anchor question_essential_bc
+
+Essential boundary conditions are boundary condtions that are
+incorporated in the trial and test spaces of the variational
+formulation. A typical case is setting the value of a variable to a
+specific function on the boundary. A popular way of implementing such
+boundary conditions involves constraining the linear system of
+equations, by modifying the system matrix and solution and load
+vectors to effectively eliminate the degrees of freedom whose values
+should be set.
+
+In order to be able to do this, one must first find out which degrees
+of freedom should be constrained. The function
+compute_dirichlet_dofs_and_values() is provided for this purpose. Just
+like the assembly functions, the user provides a function object that
+is used to determine which degrees of freedoms are constrained, and
+what values that should be given. The function returns two arrays
+containing this information.
+
+Fixing the value of a degree of freedom \f$ u_i \f$ to \f$ v \f$is
+done by replacing the i:th equation, with the simple equation \f$ u_i
+= v \f$. This corresponds to replacing row i in the matrix with the
+identity row, and replacing the i:th value in the load vector with \f$
+v \f$ . When an iterative solver is used, it is also a good idea to
+also set the i:th element of the initial solution to \f$ v \f$ .
+
+\see compute_dirichlet_dofs_and_values()
+
+<H2>What is a function object?</H2>
+\anchor question_function_object
+
+A function object is an object that acts like a function. In the
+strict sense, this means that the class should overload the
+parenthesis operator, so that objects of that class can be used in
+templates expecting a pointer to a function as argument. The following
+simple example illustrates this:
+
+\code
+template<typename F>
+int call_with_argument_zero(F func) {
+  int result = func(0);
+  return result;
+}
+
+int square(int n) {
+  return n*n;
+}
+
+struct SquarePlusConstant {
+  int operator()(int n) const {
+     return n * n + c;
+  }
+
+  int c;
+};
+
+int main() {
+  int a = call_with_argument_zero(&square);
+
+  SquarePlusConstant f1;
+  f1.c = 2;
+  int r1 = call_with_argument_zero(f1);
+
+  SquarePlusConstant f2;
+  f2.c = 5;
+  int r2 = call_with_argument_zero(f2);
+
+  return 0;
+}
+
+\endcode
+
+In this example, the template function \c call_with_argument_zero
+takes a "function" as input and calls this function with integer
+argument 0. One can use a classical function pointer, as is
+illustrated with the function \c square , or a function object such as
+\c SquarePlusConstant . The latter technique is more powerful, since
+it makes it possible for the function to contain data that modifies
+its behavior when it is called, which is not possible in an easy way
+for the normal function.
+
+In HiFlow function objects are used in several places as "callback
+functions" for different algorithms. These means that at one or
+several points in an algorithm, a user-provided function is "called
+back" in order to perform some computation that the user must define.
+
+Examples include assembly and integration, and the computation of
+values for essential boundary conditions. In these cases, special
+functions are defined instead of the parenthesis operator; and so the
+objects are not function objects in the strict sense. However, the
+basic idea is the same.
+
+<a href="http://en.wikipedia.org/wiki/Function_object">Wikipedia</a>
+provides a good overview of function objects.
+
+@} **/ }

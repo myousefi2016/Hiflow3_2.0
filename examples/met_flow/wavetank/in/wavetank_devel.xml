@@ -1,0 +1,121 @@
+<Param>
+    <Mesh>
+        <InnerRadius>0.045</InnerRadius>
+        <OuterRadius>0.120</OuterRadius>
+        <Height>0.135</Height>
+    </Mesh>
+    <FiniteElements>
+        <VelocityDegree>2</VelocityDegree>
+        <PressureDegree>1</PressureDegree>
+        <TemperatureDegree>2</TemperatureDegree>
+        <QuadratureOrder>6</QuadratureOrder>                    <!-- !! -->
+    </FiniteElements>
+    <TimeDiscretization>
+    </TimeDiscretization>    
+    <Visualization>
+        <Dimensionless>0</Dimensionless>
+        <Velocity>1</Velocity>
+        <Temperature>1</Temperature>
+    </Visualization>    
+    <PostProcessing>
+        <FlowQuantities>1</FlowQuantities>
+        <Norm>1</Norm>
+        <NusseltNumber>
+            <Type>0</Type>                                      <!-- 0: Surface , 1: Volume InnerRadius <= radius <= OuterRadius -->
+            <Surface>12</Surface>                               <!-- 12: inner Wall, 22: outer Wall, 13: bottom, 23: top -->
+            <InnerRadius>0.0</InnerRadius>                      <!-- As fraction of the gap size -->        
+            <OuterRadius>0.01</OuterRadius>                     <!-- As fraction of the gap size -->
+        </NusseltNumber>
+    </PostProcessing>
+    <InitialCondition>
+        <NInitialRotationSpeed>1</NInitialRotationSpeed>
+    </InitialCondition>
+    <Fluid>
+        <Name>water</Name>
+        <Density>1000</Density>                         <!-- rho -->
+        <Viscosity>1.004e-6</Viscosity>                     <!-- nu -->
+        <ThermalDiffusivity>0.1434e-6</ThermalDiffusivity>          <!-- Kappa --> 
+        <ThermalExpansionCoefficient>0.207e-3</ThermalExpansionCoefficient> <!-- alpha_g -->
+    </Fluid>    
+    <ExperimentSetup>
+        <Location>Laboratory</Location>                         <!-- Laboratory, Plane -->
+        <GravityX>0.0</GravityX>
+        <GravityY>0.0</GravityY>
+        <GravityZ>-9.81</GravityZ>
+        <ReferenceTemperature>25</ReferenceTemperature>
+        <StartTemperature>25</StartTemperature>
+        <WarmTemperature>28</WarmTemperature>
+        <ColdTemperature>20</ColdTemperature>
+        <WarmBoundary>22</WarmBoundary>                         <!-- 12: inner Wall, 22: outer Wall, 13: bottom, 23: top -->
+        <ColdBoundary>12</ColdBoundary>                         <!-- 12: inner Wall, 22: outer Wall, 13: bottom, 23: top -->
+        <NInitialPerturbationIntensity>0.1</NInitialPerturbationIntensity><!-- 0.1 -->
+        <NInitialWaveNumber>3</NInitialWaveNumber>              <!-- 3 -->
+        <RotationSpeed>0.0</RotationSpeed>
+        <InitialRotationSpeed>0.0</InitialRotationSpeed>
+    </ExperimentSetup>       
+    <Adaptivity>
+        <GoalFunctional>
+            <Type>VarOnSub</Type>                                <!-- "VarOnSub", "KineticEnergy", "Vorticity", "HeatTransfer" -->                                    <!-- Multiply goal functional by constant factor -->
+            <HeatTransfer>
+                <Type>1</Type>                                    <!-- 0: Surface , 1: Volume InnerRadius <= radius <= OuterRadius -->
+                <Surface>12</Surface>                            <!-- 12: inner Wall, 22: outer Wall, 13: bottom, 23: top -->
+            </HeatTransfer>
+        </GoalFunctional>  
+    </Adaptivity>
+    <Perturbation>
+        <VelPhiType>0</VelPhiType>                              <!-- -1: none, 0: L2, 1: H1_0, 2: H1 -->
+        <VelRadType>0</VelRadType>                              <!-- -1: none, 0: L2, 1: H1_0, 2: H1 -->
+        <VelZType>0</VelZType>                                  <!-- -1: none, 0: L2, 1: H1_0, 2: H1 -->
+        <PressType>0</PressType>                                <!-- -1: none, 0: L2 -->
+        <TempType>0</TempType>                                  <!-- -1: none, 0: L2, 1: H1_0, 2: H1 -->
+        <InitialCondition>
+            <Type>Create</Type>                                 <!-- Load: Use already computed perturbation, see below, Dual: use Dual at t=0, Create: create perturbation according to parameters --> 
+            <Scale>1.</Scale>
+            <BoundingBox>
+                <zMin>0.1</zMin>                                <!-- As fraction of cylinder heigth-->
+                <zMax>0.2</zMax>
+                <rMin>0.0</rMin>                                <!-- As fraction of gap width -->
+                <rMax>1.0</rMax>
+                <phiMin>0.0</phiMin>                            <!-- As fraction of pi -->
+                <phiMax>2.0</phiMax>
+            </BoundingBox>
+            <Velocity>
+                <Component>0</Component>                        <!-- 0: azimuthal, 1: radial, 2: axial -->
+                <Amplitude>0.</Amplitude>
+                <Offset>0.</Offset>
+                <WaveNumberPhi>0.</WaveNumberPhi>
+                <WaveNumberRad>0.</WaveNumberRad>
+                <WaveNumberZ>0.</WaveNumberZ>
+            </Velocity>
+            <Temperature>
+                <Amplitude>1.0</Amplitude>
+                <Offset>0.</Offset>
+                <WaveNumberPhi>0.</WaveNumberPhi>
+                <WaveNumberRad>0.</WaveNumberRad>
+                <WaveNumberZ>1.</WaveNumberZ>
+            </Temperature>
+	</InitialCondition>
+    </Perturbation>
+    <Stabilization>
+        <SkewSymm>
+            <Mode>0</Mode>                                        <!-- 0: off, 1: on -->
+        </SkewSymm>        
+        <GradDiv>
+            <Mode>0</Mode>                                        <!-- 0: off, 1: const, 2: VMS, 3: SUPG --> 
+            <Gamma>1.0</Gamma>                                    <!-- VMS: 1.0, SUPG: 0.2, CONST:  -->
+            <VMSC>9.0</VMSC>                                    <!-- VMS: 9.0 -->
+        </GradDiv>
+        <TempSUPG>
+            <Mode>1</Mode>                                      <!-- 0: off, 1: standard, 2: DEP, 3: DEP with implicit u -->
+            <Gamma>1.0</Gamma>
+        </TempSUPG>
+    </Stabilization>
+    <PrimalNonlinearSolver>                                            
+        <Stationary>
+            <AzimuthalFilter>0</AzimuthalFilter>
+        </Stationary>
+        <TimeLoop>
+            <AzimuthalFilter>0</AzimuthalFilter>
+        </TimeLoop>  
+    </PrimalNonlinearSolver>    
+</Param>

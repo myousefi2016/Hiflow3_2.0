@@ -1,0 +1,79 @@
+namespace hiflow {
+namespace doffem {
+/** @defgroup concept_doffem Concept for the numbering of degrees of freedom
+ * @{
+ *
+For a continuous finite element space, there is a condition that functions must be continuous
+at cell boundaries. Our approach is to identify corresponding degrees of freedom (DoFs), i.e.
+all DoFs on inner domain cell boundaries are shared by all \translate{angrenzenden} cells.
+The DoF numbering concept of HiFlow is explained in the following.
+
+
+First, an initial numbering is done. Here each cell gets its own number of DoFs corresponding
+to the finite element ansatz of the cell (FEManager). The order in which the cells are treated 
+depends on the iterator of the mesh module. This step is done by the function
+DegreeOfFreedom::initial_numbering().
+
+In case of a finite element space that is continuous at cell boundaries, this continuity
+condition is treated next. Therefore a cell interface based concept is used. An entity of
+topological dimension N-1 between two neighbouring cells of topological dimension N is
+called 'interface', which are faces in case of hexahedrons, for instance. The continuity
+condition has direct influence on the DoFs that are located on such interfaces. For all
+interfaces a mode (InterfaceMode) is calculated that characterizes the relation of the
+two neighbouring cells, called "Cell A" and "Cell B":
+<ul>
+ <li> Orientation of the interface with respect to Cell A
+ <li> Orientation of the interface with respect to Cell B
+ <li> Orientation of the interface to cell A
+ <li> Finite Element Ansatz of Cell A
+ <li> Finite Element Ansatz of Cell B
+</ul>
+In case of h-refined meshes the case of a big cell is neighbouring multiple smaller cells (see
+image). For the characterization of the interface further the information of parent/children
+is needed.
+\todo How exactly should this be characterized?
+\todo rename InterfaceMode* to InterfacePattern*
+\todo InterfacePattern* should be based on vector solutions to represent conditions
+      like $v_1 \cdot n = v_2 \cdot n$
+
+, ignoring that multiple cells might share common DoF</li>
+  #<li>find common DoFs and unify</li>
+</ul>
+///
+In case of h- or p-refinement, hanging DoFs may exist.
+<img src="../images/dof1.png" alt="DoF numbering 1">
+<img src="../images/dof2.png" alt="DoF numbering 2">
+<img src="../images/dof3.png" alt="DoF numbering 3">
+<img src="../images/dof4.png" alt="DoF numbering 4">
+<img src="../images/dof5.png" alt="DoF numbering 5">
+///
+The FEType objects represent the different finite elements that among other things define
+the degrees of freedom (DoFs) on the corresponding reference cell. For a discrete function
+...
+Further this class does the numbering of DoFs for a given mesh based
+on the information of a FEManager, which f.e. contains the information which FE ansatz
+should be chosen for a given mesh cell and a given variable.
+In case of \f$L^2\f$ conforming fe space, the functions may be discontinuous at cell boundaries,
+and the numbering can be done by initial_numbering().
+In case of H^1 conforming fe space, the functions must be continuous all over the domain,
+i.e. no jumps are allowed at cell boundaries. Here multiple cells share one common DoF
+at one point in space. Technically the numbering is done by initial_numbering() as a
+first step (each cells has its own DoFs) and by identify_common_dofs() the DoFs of neighbourings
+cells that must account for the continuity condition are identified.
+The identification process is done using a interface mode based approach: For each interface
+between two neighbouring cells the neighbouring relation is determined by a 5-tuple
+(-> InterfaceMode) and for the occuring modes a identification and interpolation of
+the DoFs of the two neighbouring cells on the interface is calculated
+(-> InterfaceModeInterpolation).
+For each interface in the mesh, the interface mode is calculated and using the interpolation
+information given by the InterfaceModeInterpolation the identification of corresponding
+DoFs is done.
+After identification of common DoFs has been done, the DofInterpolationContainer contains
+only interpolation information of DoFs, which is necessary in case of h- or p-adaptive
+finite element methods.
+
+\see doffem::InterfaceMode
+\see doffem::InterfaceModeInterpolation
+\see doffem::DofInterpolationContainer
+
+@} */ }}// end of group1 

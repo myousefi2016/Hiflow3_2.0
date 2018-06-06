@@ -1,0 +1,147 @@
+namespace hiflow {
+    /**
+        \defgroup concept_assembly Concept for assembly and integration
+        @{
+
+        <H2>Assembly and integration</H2>
+
+        <P> A central concept to most finite element software is the
+        assembly of the system vectors and matrices, as well as
+        integration of functions such as error estimates over the
+        whole mesh. All three operations are really integrations, but
+        the assembly functions have one or two free indices, tied to
+        the set of shape functions. </P>
+
+        <P> The matrix assembly computes the matrix that corresponds
+        to the bilinear form \f$a(u,v)\f$ in the weak formulation of
+        the problem. It is evaluated by integrating the weak form for
+        every pair of global basis functions \f$(\varphi_i, \varphi_j)\f$</P>:
+
+        \f[
+        A_{ij} = \int_{\Omega}{a(\varphi_j, \varphi_i)dx}
+        \f]
+
+        <P>
+        In finite element literature, \f$\varphi_i\f$ are usually
+        called the <I>test</I> functions and \f$\varphi_j\f$ the
+        <I>trial</I> functions.</P>
+
+        <P>Similarily, the vector assembly computes a matrix that
+        corresponds to a linear form \f$l(v)\f$, e.g. the right-hand-side in the
+        weak formulation, or a residual in a non-linear iteration:</P>
+
+        \f[ b_{i} = \int_{\Omega}{l(\varphi_i)dx} \f]
+
+        <P>Finally, simple integration of a function is often necessary:
+        \f[ I = \int_{\Omega}{f(x)dx} \f]
+        </P>
+
+        <P> In the following, the generic expression
+        \f$\int_{\Omega}{G dx}\f$ will be used to refer to any of the
+        above three integrals over \f$\Omega\f$.  </P>
+
+        <P>
+        The computation of all three types of integrals can be
+        performed with the functions in the assembly toolbox. The
+        functions hiflow::GlobalAssembler::assemble_matrix(),
+        hiflow::GlobalAssembler::assemble_vector() and
+        hiflow::GlobalAssembler::integrate_scalar() can be used to to compute
+        the integrals described above. Internally, these functions employ the
+        popular "local assembly" algorithm, in which each integral
+        over the global domain \f$\int_{\Omega}{ G dx}\f$ is
+        decomposed into a sum of integrals over the local elements
+        \f$K\f$ in the mesh \f$T\f$ that approximates \f$\Omega\f$:</P>
+
+        \f[
+        \int_{\Omega}{ G dx } = \sum_{K \in T}{\int_{K}{ G dx } }
+        \f]
+
+        <P>
+        The problem is hence reduced to evaluating the local integrals
+        \f$\int_{K}{ G dx }\f$. This is done by the object local_asm, which is
+        derived from hiflow::AssemblyAssistant, that the user provides to each
+        of the global assembly functions. The functions are templates, so that the
+        class of the object is determined by the user. The only
+        requirements on this class is that it implements the needed ones of the
+        following operators:
+        <UL>
+        <LI> Simple value integral: void operator()(const Element<DataType>& element, const Quadrature<DataType>& quadrature, DataType& value);</LI>
+        <LI> Vector assembly: void operator()(const Element<DataType>& element, const Quadrature<DataType>& quadrature, LocalVector& lv);</LI>
+        <LI> Matrix assembly: void operator()(const Element<DataType>& element, const Quadrature<DataType>& quadrature, LocalMatrix& lm);</LI>
+        </UL>
+        </P>
+
+        <P> Currently, double and float are supported for DataType. In each
+        operator, the function void hiflow::AssemblyAssistant::initialize_for_element(const Element< DataType >& element, const Quadrature< DataType >& element_quadrature),
+        which prepares for the local integral
+        computation, that should be performed on the given element and
+        with the given quadrature rule. The operator performs
+        the local integration or assembly on the element, and
+        returns the value, vector or matrix respectively via the third
+        parameter. The output parameter is guaranteed to be of the
+        correct dimension, and all values are set to 0, so that there
+        is no need to do this inside the function.</P>
+
+        <H3>Defining the local assembler</H3>
+
+        <P>The user-defined class, called a "local assembler" can be defined in
+        any way to provide a local contribution from an element to the global
+        integration entity. Most practical cases, however, share the following
+        characteristics:
+
+        <UL>
+        <LI>The local integral is mapped with some transformation from the input
+        element \f$K\f$ to a "reference element" \f$\hat{K}\f$, on which the local
+        shape functions can be evaluated.</LI>
+        <LI>A quadrature rule is used to perform the integration.</LI>
+        </UL>
+        </P>
+
+        <P> The transformation to the reference element is normally
+        performed using an element of type CellTransformation. An
+        object of this class defines a transformation \f$F_K : \hat{K}
+        \rightarrow K \f$.  Letting \f$J = DF_K\f$ be the jacobian matrix
+        of the transformation, the integral on the reference element
+        \f$\hat{K}\f$ becomes
+
+        \f[
+        \int_{K}{G(x) dx} = \int_{\hat{K}}{G(F(\xi)) \vert\det{J}\vert d\xi}
+        \f]
+        </P>
+
+        <P> The transformed integral is then approximated using a
+        quadrature formula, which is a weighted sum of function values
+        at a set of points \f$\xi_q\f$ in the reference element:
+
+        \f[
+        \int_{\hat{K}}{G(F(\xi))\vert\det{J(\xi)}\vert d\xi} \approx
+        \sum_{q = 1}^{N_q}{w_q \cdot G(F(\xi_q)) \cdot \vert\det{J(\xi_q)}\vert}
+        \f]
+
+        where \f$w_q\f$ are the quadrature weights.
+        </P>
+
+        <P> If such a transformation and approximation is used, the
+        task of the local assembler class is to compute the sum in the
+        previous approximation. In order to achieve this, it needs to
+        obtain the values \f$w_q\f$, \f$G(F(\xi_q))\f$ and
+        \$\vert\det{J(\xi_q)}\vert\$ for all the quadrature points
+        \f$q\f$ and sum them up in a loop.</P>
+
+        <P>Since this type of assembly is so common, HiFlow includes
+        special support for obtaining these values, by using the
+        AssemblyAssistant class. This class helps the user evaluate
+        the local shape functions, transformation quantities and
+        quadrature parameters, which greatly simplifies the
+        implementation of a local assembler. A recommended way of
+        using the AssemblyAssistant is to derive the local assembler
+        class (privately). The AssemblyAssistant has to be initialized
+        for each element, which is best done with a call to
+        AssemblyAssistant::initialize_for_element as the first thing
+        in the local assembler's function with the same name. After
+        that, the functions in the AssemblyAssistant can be used
+        directly in the assembly operator(), which gives
+        a simple syntax since no object is used to access the
+        values. \see AssemblyAssistant</P>
+    **/
+}

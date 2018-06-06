@@ -1,0 +1,28 @@
+<Param>
+  <Mesh>
+    <Filename>unit_cube.inp</Filename>
+    <InitialRefLevel>1</InitialRefLevel>
+    <FinalRefLevel>5</FinalRefLevel>
+    <Degree>2</Degree>
+  </Mesh>
+  <LinearAlgebra>
+    <NameMatrix>CoupledMatrix</NameMatrix>
+    <NameVector>CoupledVector</NameVector>
+    <Platform>CPU</Platform>
+    <Implementation>Naive</Implementation>
+    <MatrixFormat>CSR</MatrixFormat>
+  </LinearAlgebra>
+  <LinearSolver>
+    <Name>GMRES</Name>
+    <SizeBasis>100</SizeBasis>
+    <Method>RightPreconditioning</Method>
+    <MaxIterations>5000</MaxIterations>
+    <AbsTolerance>1.0e-14</AbsTolerance>
+    <RelTolerance>1.0e-9</RelTolerance>
+    <DivTolerance>1.0e6</DivTolerance>
+  </LinearSolver>
+  <DGMethod>
+    <Theta>-1.</Theta>
+    <Gamma>0.5</Gamma>
+  </DGMethod>
+</Param>

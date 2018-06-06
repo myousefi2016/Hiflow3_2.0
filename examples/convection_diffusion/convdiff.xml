@@ -1,0 +1,27 @@
+<Param>
+  <Mesh>
+    <Filename>unit_square.inp</Filename>
+    <RefinementLevel>6</RefinementLevel>
+  </Mesh>
+  <LinearSolver>
+    <GMRES>
+      <MaximumIterations>1000</MaximumIterations>
+      <AbsoluteTolerance>1.e-14</AbsoluteTolerance>
+      <RelativeTolerance>1.e-8</RelativeTolerance>
+      <DivergenceLimit>1.e6</DivergenceLimit>
+      <BasisSize>50</BasisSize>
+      <Preconditioning>0</Preconditioning>
+    </GMRES>
+  </LinearSolver>
+  <ILUPP>
+    <PreprocessingType>0</PreprocessingType>
+    <PreprocessingNumber>1010</PreprocessingNumber>
+    <MaxMultilevels>20</MaxMultilevels>
+    <MemFactor>0.8</MemFactor>
+    <PivotThreshold>1.75</PivotThreshold>
+    <MinPivot>0.01</MinPivot>
+  </ILUPP>
+  <Output>
+    <LogFilename>info_conv_diff.log</LogFilename>
+  </Output>
+</Param>

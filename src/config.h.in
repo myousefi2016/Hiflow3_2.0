@@ -1,0 +1,73 @@
+// Copyright (C) 2011-2017 Vincent Heuveline
+//
+// HiFlow3 is free software: you can redistribute it and/or modify it under the
+// terms of the European Union Public Licence (EUPL) v1.2 as published by the
+// European Union or (at your option) any later version.
+//
+// HiFlow3 is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the European Union Public Licence (EUPL) v1.2 for more
+// details.
+//
+// You should have received a copy of the European Union Public Licence (EUPL) v1.2
+// along with HiFlow3.  If not, see <https://joinup.ec.europa.eu/page/eupl-text-11-12>.
+
+// This file contains the configuration for the HiFlow library.
+
+// Optional libraries
+
+// METIS
+#cmakedefine WITH_METIS
+#define METIS_VERSION @METIS_VERSION@
+
+// ParMETIS
+#cmakedefine WITH_PARMETIS
+
+// ILU++
+#cmakedefine WITH_ILUPP
+
+// MKL
+#cmakedefine WITH_MKL
+
+// CBLAS
+#cmakedefine WITH_CBLAS
+
+// CLAPACK
+#cmakedefine WITH_CLAPACK
+
+// CUDA
+#cmakedefine WITH_CUDA
+
+// GAUSSQ
+#cmakedefine WITH_GAUSSQ
+
+// OPENCL
+#cmakedefine WITH_OPENCL
+
+// MUMPS
+#cmakedefine WITH_MUMPS
+
+// UMFPACK
+#cmakedefine WITH_UMFPACK
+
+// OpenMP
+#cmakedefine WITH_OPENMP
+
+// HDF5
+#cmakedefine WITH_HDF5
+
+// HYPRE
+#cmakedefine WITH_HYPRE
+
+// PETSc
+#cmakedefine WITH_PETSC
+#cmakedefine WITH_COMPLEX_PETSC
+
+// SLEPc
+#cmakedefine WITH_SLEPC
+
+// p4est
+#cmakedefine WITH_P4EST
+
+// LOG_INFO Activation
+#cmakedefine INFO_LOG_ACTIVE

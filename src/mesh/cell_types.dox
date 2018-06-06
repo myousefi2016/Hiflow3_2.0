@@ -1,0 +1,68 @@
+// Copyright (C) 2011-2017 Vincent Heuveline
+//
+// HiFlow3 is free software: you can redistribute it and/or modify it under the
+// terms of the European Union Public Licence (EUPL) v1.2 as published by the
+// European Union or (at your option) any later version.
+//
+// HiFlow3 is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the European Union Public Licence (EUPL) v1.2 for more
+// details.
+//
+// You should have received a copy of the European Union Public Licence (EUPL) v1.2
+// along with HiFlow3.  If not, see <https://joinup.ec.europa.eu/page/eupl-text-11-12>.
+
+namespace mesh {
+///
+/// \class CellType cell_types.h
+/// \brief Holds the cell type definition for different cells.
+/// \author Thomas Gengenbach, Staffan Ronnas
+///
+///
+/// How to create a new cell type:
+///
+/// In order to create a new cell type, the following steps need to be
+/// done:
+///
+/// -# Create new sub-class for the cell type. [cell_types.h]
+/// -# Add the new cell type to the enum Type in the base
+///    class. [cell_types.h]
+/// -# Create static arrays for the new cell type. [cell_types.{h,cc}]
+///    - We stick to the numbering conventions of vtk described here:
+///      http:://www.vtk.org/VTK/img/file-formats.pdf
+///    - Necessary are:
+///      - num_entities_ containing the number of entities of each
+///        dimension including itself
+///      - edges_of_xxx_ containing the vertices connecting an edge
+///      - faces_of_xxx_ containing the vertices generating a face in
+///        counterclockwise ordering looking from outside the cell.
+///      - entity_size_ containing the number of vertices generating the
+///        (sub-)entities of each dimension.
+///    - Optional are all the refinement sub-cell descriptions. However
+///      if you want to be able to do different kinds of refinement,
+///      these need to be implemented as well. For each type of
+///      refinement two arrays need to exist:
+///      - xxx_toNxxx_sub_cells_ which describes the numbering of the
+///        local sub-cells of the cell to be refined
+///      - xxx_toNxxx_parent_facets_ which describes for each
+///        refined sub facet the parent facet. If the sub face is
+///        inside to the parent cell, it gets a -1, otherwise the local
+///        number of the parent facet. You can check this array easily
+///        for consistency checking the columns to contain either a -1
+///        or the column number. Any other number is wrong.
+///      - an array for the vertices inside the cell if needed for this
+///        type of refinement (see Quadrilateral or Hexahedron).
+/// -# Implement the constructor for the new cell type: [cell_types.cc]
+///    - Necessary:
+///      - Call add_sub_entity function to fill in the cell specific
+///        information for each (sub-)entity.
+///    - Optional (needed for refinement):
+///      - Call add_refined_vertex function to fill the
+///        refinement-specific arrays
+///      - Call add_refinement_description with an std::vector
+///        containing the sub-cells to create.
+/// -# Modify get_cell_type function to also call constructor for the
+///    newly created cell type. [cell_types.cc]
+/// -# Modify cell_type_name() function. [cell_types.cc]
+///
+}

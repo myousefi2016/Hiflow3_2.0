@@ -1,0 +1,129 @@
+Release Notes for HiFlow3 Version 2.0
+
+Version 2.0 of HiFlow3 provides major and essential new features in several of its modules: The mesh module provides extended support for adaptively refined meshes by means of the p4est library (http://p4est.github.io/). Furthermore, pyramid elements are now supported for 3D geometries. The DoF/FEM modules now provide the ability for Discontinuous Galerkin (DG) discretizations. The linear algebra module ships with new solvers and preconditioners (Schur complement and energy-efficient geometric multigrid) as well as interfaces to further third-party libraries (Hypre, PETSc, SLEPc). Furthermore, new (parallel) matrix and vector implementations for Polynomal Chaos Expansion (PCE) based discretizations are available. Finally, tools for goal oriented adaptivity are introduced.
+
+The new features are documented in several new examples and tutorials.
+
+FEATURES
+* New mesh module mesh_pXest: capable of local mesh refinement, based on p4est library
+* New mesh element: pyramid
+* Support for discontinuous Galerkin
+* Schur complement solver and preconditioner
+* Energy-efficient parallel geometric multigrid solver and preconditioner
+* Interfaces to Hypre (http://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods), PETSc (http://www.mcs.anl.gov/petsc/) and SLEPc (http://slepc.upv.es/) libraries
+* New linear algebra structure: matrix and vector structure for Polynomial Chaos Expansion
+* Tools for goal oriented adaptivity: patch interpolation, fe space interpolation, dynamic mesh handler
+
+TUTORIALS
+* Aortic Blood Flow Simulation
+* Error Estimation on Convex Bent Domains for the Poisson Equation
+
+EXAMPLES
+* Goal oriented adaptivity for instationary convection diffusion equation
+* Natural convection flow in a baroclinic wavetank
+* Monolithic ALE-based fluid-structure interaction benchmarks (Turek-Hron and Taylor-Couette-flow)
+* Solving Poisson's equations with various preconditioners and solvers (HiFlow3 and Hypre)
+* Eigenvalue computation of discrete Laplace operators (demonstration of SLEPc interface)
+* Channel Benchmark with Schur complement preconditioner
+* Solving Poisson's equation with DG-FEM
+* Solution of Navier-Stokes equations by means of DG-FEM
+* Solving Poisson's equation with an energy-efficient geometric multigrid method
+
+###########################
+
+Release Notes for HiFlow3 Version 1.5
+
+Version 1.5 of HiFlow3 provides two essential, new features: A new module about Uncertainty Quantification for Spectral-Stochastic-Finite-Elements using Polynomial Chaos. The new module is accompanied with a tutorial. Second, HiFlow3 1.5 provides a new file i/o feature based on the eXtensible Data Model and Format (XDMF, http://www.xdmf.org): XMDF uses XML to store light data and HDF5 to store heavy data.
+
+The new release ships two new tutorials on "Elasticity for Soft Tissue Simulation" and one on  "Solving the Poisson equation with uncertain parameters using the Spectral-Stochastic-Finite-Element-Method"
+
+FEATURES
+* new module UQ for Spectral-Stochastic-Finite-Elements using Polynomial Chaos
+* new file i/o concept based on XDMF
+
+TUTORIALS
+*  Elasticity for Soft Tissue Simulation
+*  Solving the Poisson equation with uncertain parameters using the Spectral-Stochastic-Finite-Element-Method
+
+The HiFlow3 Version 1.5 release was carefully tested on different architectures and using a broad range of libraries. However, in case you face complications or have an operation that you would like to see supported, do not hesitate to contact us via the forum on http://www.hiflow3.org
+
+###########################
+
+Release Notes for HiFlow3 Version 1.4
+
+With Version 1.4 of HiFlow3 we present a streamlined and standardized version. The release provides several facilitations, generalizations and clean-ups to make HiFlow³ more generic and easier to use. CoupledVector has been equipped with post processing and visualization options to replace the old PPVector. Further, Linear Algebra and Assembly can now also be executed in single precision.
+A new support feature enables a geometric search and the evaluation of a solution at arbitrary points.
+
+The new release ships two new tutorial on a "Boundary Value Problem for Incompressible Generalized Porous Media Equation" and one on a "Direct and Inverse Problem in Electrostatics".
+
+FEATURES
+ * Generic interfaces for Matrices and Vectors
+ * Linear Algebra, Assembly and Visualization in single precision
+ * CoupledVector with Post-Processing abilities
+ * Geometric search with an efficient localisation of arbitrary points in a mesh
+ * Evaluation of solution at arbitrary points
+
+TUTORIALS
+ * Boundary Value Problem for Incompressible Generalized Porous Media Equation
+ * Direct and Inverse Problem in Electrostatics
+
+The HiFlow3 Version 1.4 release was carefully tested on different architectures and using a broad range of libraries. However, in case you face complications or have an operation that you would like to see supported, do not hesitate to contact us via the forum on http://www.hiflow3.org.
+
+###########################
+
+Release Notes for HiFlow3 Version 1.3
+
+Version 1.3 of the multi-purpose finite element library HiFlow3 delivers several new tools for the efficient solution of problems modeled by partial differential equations, such as support for periodic meshes. Furthermore, new support features that facilitate data exchange and visualization were added. Finally, the compatibility with different compilers was improved. The new release ships with four new tutorials illustrating a large range of topics varying from stabilized formulations for convection-diffusion problems to optimal control problems.
+
+In order to facilitate future cooperation, we have decided to release version 1.3 under the Lesser General Public License (LGPLv3).
+
+FEATURES
+ * Improved compiler support: tested with gcc 4.7, Intel 12, open64 5.0, clang 3.1.
+ * New interface for basic binary I/O.
+ * New classes for working with tensors.
+ * New class GridData for data exchange on structured block grids.
+ * Support for meshes with periodic boundaries (with example poisson_periodic).
+ * New parallel visualization framework based on subgrid evaluation (CellVisualization).
+ * Improved communication performance in CoupledVector.
+ * Extension of Newton solver to enable inexact strategies and Armijo Damping.
+ * Support for 1D finite elements.
+ * New optional interface to the MUMPS linear solver library.
+ * Extended capabilities of sequential dense matrix (SeqDenseMatrix)
+
+TUTORIALS
+ * Poisson Tutorial (extended, 1D and 3D example)
+ * Flow Tutorial
+ * Multi-platform Linear Algebra Tutorial
+ * Distributed Control Tutorial *NEW*
+ * Inexact Newton Tutorial *NEW*
+ * Instationary Convection-diffusion Tutorial *NEW*
+ * Tutorial on stabilization methods for convection diffusion equation *NEW*
+
+The HiFlow3 Version 1.3 release was carefully tested on different architectures and using a broad range of libraries. However, in case you face complications or have an operation that you would like to see supported, do not hesitate to contact us via the forum on http://www.hiflow3.org.
+
+###########################
+
+Release Notes for HiFlow3 Version 1.2
+
+The release of HiFlow3 1.2 is an important step towards a multi-purpose finite element software providing powerful tools for efficient and accurate solution of a wide range of problems modeled by partial differential equations. We enhanced not only the mathematical methods and added new features, but moreover extended the hardware compatibility to target a wider range of systems e.g. accelerated by GPUs. The main improvements with respect to the former version 1.1 are listed below.
+
+TUTORIALS
+ * Poisson Tutorial (extended, second example)
+ * Flow Tutorial (extended, second 3D example)
+ * Multi-platform Linear Algebra Tutorial
+
+FEATURES
+ * New optional interface for parallel I/O in the HDF5 format.
+ * Support for a simple form of checkpointing for CoupledVector objects via HDF I/O.
+ * New output interface for writing mesh data in AVS UCD format (.inp).
+ * Support for surface integrals in 2D and 3D.
+ * Support for user-defined modification of the geometry during refinement via a callback function.
+ * Optional interface to the CGAL library provides geometric searches in the mesh.
+ * New node-local preconditioners based on ILU factorization with/without fill-ins entries and approximate inverse
+ * (FSAI) for multi-core CPU and GPU platforms.
+ * New node-local CG and BiCGStab solvers.
+ * Use of OpenCL extension for NVIDIA GPUs for local linear algebra.
+ * The linear algebra module has been decoupled from other HiFlow modules, via the new class "LaCouplings", which describes the communication structure for the "CoupledVector" and "CoupledMatrix" classes. Compatibility with applications using the "Couplings" interface is maintained.
+ * Support for rectangular global matrices, via "CoupledMatrix" objects containing separate "LaCouplings" objects for the rows and the columns.
+
+The HiFlow3 Version 1.2 release was carefully tested on different architectures and using a broad range of libraries. However, in case you face complications or have an operation that you would like to see supported, do not hesitate to leave a comment on our webpage!

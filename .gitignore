@@ -1,0 +1,80 @@
+# ignore created libs and depends
+*.[oad]
+.deps
+
+# ignore backup and swap files
+*~
+\#*\#
+\#*
+*\#
+*.backup
+*.bak
+*.swp
+
+# ignore build directory
+/build/*
+build*
+
+# ignore doxygen files
+/doc/doxygen/html
+
+# ignore tex auxilliary files
+*.aux
+*.bbl
+*.blg
+*.log
+*.en.prepl
+*.dvi
+*.idx
+*.ilg
+*.ind
+*.out
+*log
+
+# Ignore stupid Mac OS X files
+*.DS_Store
+
+# ignore output mesh
+*vtu
+
+# ignore executables
+application/met_flow/met_flow
+application/met_flow_wavetank/met_flow
+application/met_flow_cci/met_flow
+application/poisson_periodic_adaptive/poisson_tutorial
+
+# ignore experiments
+application/not_needed_yet/
+application/CorFinalFixedFractionStrategy
+application/FinalFixedFractionStrategy
+application/FixedFractionStrategy
+application/OpenMP
+application/PreoptimizedMesh
+application/SumFixedFractionStrategy
+application/alpha_tests
+application/aposteriori
+application/energy
+application/experiments
+application/mesh_test.cc
+application/met_flow/contrib/compute_mesh.py
+application/met_flow_cci/PP
+application/met_flow_cci/PP_example
+application/met_flow_cci/keep
+application/met_flow_cci/log
+application/new_alphas
+application/new_uniform
+application/ns_aposteriori
+application/structure_met_flow
+application/uniform
+application/utils
+application/vorticity
+lib
+
+# Ignore eclipse files
+eclipse
+.project
+.cproject
+.settings
+.pydevproject
+.clang-format*
+

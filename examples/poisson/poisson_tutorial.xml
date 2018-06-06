@@ -1,0 +1,26 @@
+<Param>
+  <Mesh>
+    <Filename1>unit_line.inp</Filename1>
+    <Filename2>unit_square.inp</Filename2>
+    <Filename3>unit_cube.inp</Filename3>
+    <InitialRefLevel>1</InitialRefLevel>
+    <FinalRefLevel>8</FinalRefLevel>
+    <FeDegree>1</FeDegree>
+  </Mesh>
+  <LinearAlgebra>
+    <NameMatrix>CoupledMatrix</NameMatrix>
+    <NameVector>CoupledVector</NameVector>
+    <Platform>CPU</Platform>
+    <Implementation>Naive</Implementation>
+    <MatrixFormat>CSR</MatrixFormat>
+  </LinearAlgebra>
+  <LinearSolver>
+    <Name>CG</Name>
+    <SizeBasis>50</SizeBasis>
+    <Method>NoPreconditioning</Method>
+    <MaxIterations>1000</MaxIterations>
+    <AbsTolerance>1.0e-14</AbsTolerance>
+    <RelTolerance>1.0e-8</RelTolerance>
+    <DivTolerance>1.0e6</DivTolerance>
+  </LinearSolver>
+</Param>

@@ -1,0 +1,38 @@
+// Copyright (C) 2011-2017 Vincent Heuveline
+//
+// HiFlow3 is free software: you can redistribute it and/or modify it under the
+// terms of the European Union Public Licence (EUPL) v1.2 as published by the
+// European Union or (at your option) any later version.
+//
+// HiFlow3 is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the European Union Public Licence (EUPL) v1.2 for more
+// details.
+//
+// You should have received a copy of the European Union Public Licence (EUPL) v1.2
+// along with HiFlow3.  If not, see <https://joinup.ec.europa.eu/page/eupl-text-11-12>.
+
+namespace doffem {
+
+///
+/// \class  FEInterfacePattern fe_interface_pattern.h
+/// \brief  Describe the pattern of cells that have a common interface.
+/// \author Martin Baumann, martin.baumann@kit.edu<br>Michael Schick, michael.schick@kit.edu
+///
+
+/**
+Mesh entities of dimension (DIM-1) between two neighbouring cells are called 
+interfaces and is represented by mesh::Interface. For an interface the geometric 
+orientation of the neighbouring cells is characterized by mesh::InterfacePattern.
+Further the information about the finite element ansatz of each cell connected
+with the interface characterized the interface as well. The concept of master
+and slave cell (in case of h-refinement multiple slave cells) is used like in
+mesh::Interface. The FEInterfacePattern consists of
+<ul>
+  <li> InterfacePattern
+  <li> FEType of master cell
+  <li> FEType of each slave cell
+<ul>
+**/
+
+}

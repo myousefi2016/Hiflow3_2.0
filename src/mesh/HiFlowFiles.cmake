@@ -1,0 +1,58 @@
+set(mesh_SOURCES
+  attributes.cc
+  cell_type.cc
+  cell_type_definitions.cc
+  communication.cc
+  connectivity.cc
+  distributed_builder.cc
+  entity.cc
+  geometric_search.cc
+  interface.cc
+  mesh.cc
+  mesh_database.cc
+  mesh_db_view.cc
+  mesh_tools.cc
+  mpi_communication.cc
+  partitioning.cc
+  periodicity_tools.cc
+  repartitioning.cc
+  reader.cc
+  refined_mesh_db_view.cc
+  refinement.cc
+  writer.cc
+  geometric_tools.cc
+  mesh_database_pXest.cc
+  mesh_pXest.cc
+  pXest_utils.cc)
+
+# TODO: some of these are only used in other directories and
+# should not really be public. See what can be done about this.
+set(mesh_PUBLIC_HEADERS
+  attributes.h
+  cell_type.h
+  communication.h
+  connectivity.h
+  distributed_builder.h
+  entity.h
+  geometric_search.h
+  interface.h
+  iterator.h
+  mesh.h
+  mesh_builder.h
+  mesh_database.h
+  mesh_db_view.h
+  mesh_tools.h
+  mesh_wrapper.h
+  partitioning.h
+  periodicity_tools.h
+  repartitioning.h
+  refinement.h
+  reader.h
+  types.h
+  writer.h
+  geometric_tools.h
+  boundary_domain_descriptor.h
+  mesh_pXest.h
+  pXest_utils.h
+  pXest_structs.h
+  mesh_database_pXest.h)

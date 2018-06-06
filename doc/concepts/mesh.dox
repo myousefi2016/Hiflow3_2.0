@@ -1,0 +1,340 @@
+namespace hiflow {
+namespace mesh {        
+/**       
+\defgroup concept_mesh Mesh Module Concepts
+ @{
+<H2>Mesh Interface</H2>
+<P>
+  The main component of the library is the Mesh abstract base class,
+  which defines the interface for all mesh implementations. There is
+  currently only one implementation of this interface, the MeshDbView
+  class, but it is recommended that all clients interact with meshes
+  through the base class, so that new implementations can be used
+  without modification.
+</P>
+<H2>Entities</H2>
+<P>
+  A Mesh object is a collection of Entities (see class Entity). Entity is a general
+  concept that models the mathematical ideas of vertices, edges,
+  polygons, polyhedra, and higher-dimensional objects. Each Entity
+  has an associated Topological Dimension (represented by the integer
+  type TDim), which is equal to the corresponding mathematical idea
+  (i.e dimension 0 for points, 1 for line segments, etc). An Entity
+  contains sub-entities of lower dimension: for instance, an edge
+  contains two vertices, and a triangle contains three edges and
+  three vertices.
+</P>
+<P>   
+  An Entity is placed in a geometrical space by associating
+  coordinates to its vertex. The dimension of the geometrical space,
+  i.e. the number of coordinates associated to each vertex, is called
+  its Geometrical Dimension (represented by the integer type
+  GDim). Each Entity object has a fixed geometrical dimension, which
+  must be greater than or equal to its topological dimension. It is
+  thereby possible to have e.g. an entity with topological dimension
+  2, such as a triangle, that lies in a space with geometrical dimension 3.
+
+  Each Mesh has fixed topological and geometrical dimensions. Its
+  topological dimension is the maximum topological dimension of its
+  entities. In a Mesh of topological dimension D, the entities are
+  given the following abstract names, according to their topological
+  dimensions:
+</P>
+<TABLE>
+  <TR>
+    <TD>Top. Dim.</TD>
+    <TD>Name</TD>
+  </TR>
+  <TR>
+    <TD>0</TD>
+    <TD>Vertex</TD>
+  </TR>   
+  <TR>
+    <TD>1</TD>
+    <TD>Edge</TD>
+  </TR>
+  <TR>
+    <TD>D-1</TD>
+    <TD>Facet</TD>
+  </TR>
+  <TR>
+    <TD>D</TD>
+    <TD>Cell</TD>
+  </TR>   
+</TABLE>
+<P>
+  For example, a triangle is a Cell in a 2d Mesh, but a Facet (and Face) in a 3d mesh.
+</P>
+<P>
+  It is possible to create Mesh objects with arbitrary positive
+  topological and geometrical dimensions. However, some of the
+  functionality provided in the library are restricted to topological
+  dimensions 1, 2 and 3. 
+</P>
+<H2>Cell Type</H2>
+<P>Different types of entities of any topological dimension can be
+  used. For vertices and edges (dimension 0 and 1), one cannot
+  imagine very much variation, but for e.g. dimension 2, it is
+  possible to have triangles, quadrilaterals, pentagons, hexagons,
+  etc. These entities have the same topological dimension, but different numbers
+  of vertices. 
+</P>
+<P>
+  Each type of Entity is described in a sub-class of the class
+  CellType. This class defines how all sub-entities are defined,
+  i.e. which vertices belong to each edge and facet (in 3d) of the
+  entity. It also describes how an Entity can be refined into new
+  Entities of the same topological dimension (see Refinement).
+</P>
+<P>
+  The library defines Triangles and Quadrilaterals in 2d; and
+  Tetrahedra and Hexahedra in 3d. A user can however extend this with
+  any other type of cell, by implementing a new subclass of CellType.
+</P>
+<H2>Entity Index and Id</H2>
+<P>A Mesh provides a consecutive numbering ("Index") of all its entities of a
+  fixed dimension. This numbering, whose values are of type
+  EntityNumber, starts from 0 and ends at
+  Mesh::num<sub>entities</sub>(dimension) - 1, is useful e.g. for storing data
+  associated to the entities in external arrays. 
+</P>
+<P>
+  Additionally, each entity has an id, of type Id, which is not
+  necessarily consecutive. This id can be used to identify entities
+  belonging to related Mesh objects, for instance during refinement
+  or boundary extraction. It is possible to obtain the Id from the
+  EntityNumber through the function Mesh::get<sub>id</sub>(), and vice versa to
+  obtain the EntityNumber from the Id through the function
+  Mesh::find_entity().
+</P>
+<H2>Iteration</H2>
+<P>Consecutive access to all entities of a given topological dimension
+  in a Mesh object is performed with objects of the iterator class
+  EntityIterator, that can be obtained through the begin() and end()
+  functions of the Mesh class. Dereferencing an EntityIterator provides the user
+  with an Entity object, which can be used to interact with a specific
+  Entity of the mesh. 
+</P>
+<P>
+  Here is an example that loops over all entities of dimension tdim in a mesh, and outputs the Id of the Entity.
+</P>
+\code
+for (EntityIterator it = mesh->begin(tdim); it != mesh->end(tdim); ++it) {
+   std::cout << "Cell " << it->id() << "\n";
+}
+\endcode
+<P>
+  A second iterator class, IncidentEntityIterator, is used to iterate
+  over the entities that are incident to a given Entity. 
+</P>
+<P>
+  The concept of incident entities encompass several relations that
+  would normally be viewed as separate. When the dimension of the
+  incident entities is smaller than that of the input entity, the
+  incidence iteration will go over sub-entities of the entity. For
+  instance, given a three-dimensional cell, the incidence iteration
+  over entities of dimension one will traverse the edges of the
+  cell. 
+</P>
+<P>
+  When the incidence dimension is larger than the dimension of
+  the entity, it is conversely the higher-dimensional entities
+  containing the entity that will be visited. As an example,
+  traversing the incident entities of dimension 3 of an edge will
+  yield all cells (in a 3d mesh) containing that edge.
+</P>
+<P>
+  When the dimensions are equal, the incidence relation is really a
+  neighborhood relation. The neighborhood of an entity consists of
+  those entities of the same dimension that share at least one vertex
+  with the entity. Note that this definition of neighborhood does not
+  directly allow the traversal of e.g. the cells sharing an edge with
+  a given cell. Such neighborhoods can instead be obtained through
+  nested iteration of incidence relations of different dimensions.
+</P>
+<P>
+  The following example illustrates the idea of incidence iteration,
+  which outputs the id:s of the facets of each cell in the mesh:
+</P>
+<P>
+\code
+for (EntityIterator it = mesh->begin(tdim); it != mesh->end(tdim); ++it) {
+   std::cout << "Cell id " << it->id() << " has the following facets: \n";
+   for (IncidentEntityIterator iit = mesh->begin_incident(*it, tdim-1); 
+      iit != mesh->end_incident(*it, tdim-1); ++iit) {
+      std::cout << "Facet iit->id() << " \n";
+   }
+}
+\endcode
+<P>
+  The incidence relations described so far cover all types of
+  incidence iteration, except the case of the vertices (dimension 0)
+  incident to a given vertex. This would be defined as those vertices
+  contained in at least one cell that also contains the current
+  vertex.However, in the current implementation of the Mesh interface,
+  this kind of iteration is not available.
+</P>
+<P>
+  The EntityIterator and IncidentIterator classes model the
+  ForwardIterator concept in the STL. It can be used with all standard
+  algorithms that accept objects implementing this concept.
+</P>
+\see hiflow/test/iteration_demo.cc
+
+<H2>MeshBuilder</H2>
+<P>Except for its Attributes (see Attributes), the data in a Mesh
+  object cannot be modified. Mesh objects can only be constructed
+  using an object of type MeshBuilder. 
+</P>
+<P>
+  MeshBuilder is an abstract interface which provides functionality
+  to add vertices and entities to a Mesh. Different implementations
+  of the Mesh interface can implement different implementations of
+  the MeshBuilder interface, in order to construct an object of the
+  concrete Mesh sub-class. For constructing objects of type
+  MeshDbView, the default Mesh implementation, the class MeshDbViewBuilder is used.
+</P>
+<P>
+  The function add_vertex() is provided to add a vertex to the
+  Mesh. It takes as input an array with the coordinates of the vertex
+  to be added in interleaved form, and returns an object of type
+  VertexHandle that can be used to identify the added
+  vertex. add_vertices() is potentially more efficient function that
+  makes it possible to add several vertices at once; and hence
+  returns a vector with VertexHandles for the added vertices.
+</P>
+<P>
+  The function add_entity takes as input an ordered vector of
+  VertexHandles for the vertices in the entity, and returns an
+  identifier in the form of an EntityHandle object. Again,
+  add_entities() makes it possible to add several entities at once.
+</P>
+<P>
+  When all vertices and entities have been added, a Mesh object can
+  be created with the build() function.
+</P>
+<H2>Reader</H2>
+<P>Meshes can be read from files in different formats. A unified
+  interface for mesh file input is defined in the Reader
+  class. Different sub-classes of Reader implement reading from
+  different file formats. The reader takes as input a MeshBuilder
+  object, and uses it to construct a Mesh.
+</P>
+<P>
+  The input formats currently supported are sequential AVS UCD (through
+  UcdReader) and unstructured sequential and parallel VTK (VtkReader
+  and PVtkReader). In order to support other file formats, users of
+  the library can implement their own sub-class of Reader with the
+  help of the MeshBuilder interface.
+</P>
+\see hiflow/test/reader_test.cc
+
+<H2>Writer</H2>
+<P>Meshes can be written to different file formats. The abstract
+  Writer class provides a unified interface for Mesh file
+  output. Just like for mesh file input, implementations for AVS UCD,
+  and sequential and parallel VTK formats are provided (UcdWriter,
+  VtkWriter, PVtkWriter). This can be extended by the user by
+  implementation of new sub-classes of Writer.
+</P>
+\see hiflow/test/writer_test.cc
+
+<H2>Refinement and Coarsening</H2>
+\TODO TODO: Finish me
+<P>
+  The standard global uniform refinement of a mesh of mixed elements is called
+  through
+</P>
+\code
+  mesh->refine();
+\endcode
+<P>
+  To refine only specific cells, this function can also be called with
+  a standard vector of cell ids.
+</P>
+\code
+  mesh->refine(std::vector<Id> cells_to_refine);
+\endcode
+<P>
+  It is possible to create any kind of refinement yourself. For each
+  cell type, it is then necessary to specify the points, edges, facets
+  and cells that will be created. This is documented in the cell
+  type. To refine custom cells, each in its own way, one needs to
+  build up a refinement tree.
+</P>
+\code
+  Mesh* refined_mesh = refine(const std::map<Id, const RefinementTree*>& refinements)
+\endcode
+\see hiflow/test/refinement_demo.cc
+
+<H2>Attributes</H2>
+<P>It is possible to attach extra data to the Entities of a Mesh
+  through the use of Attributes. An Attribute is a named function
+  that associates a value to each Entity of a fixed topological
+  dimension in a Mesh. The values of an Attribute can be of almost
+  any type, including user-defined types.
+  \TODO TODO: what are specific requirements on Attribute types?
+</P>
+<P>
+  Attributes are accessed through the get() and set() functions of
+  the Mesh and Entity classes. Each function takes as argument the
+  name of the attribute and the topological dimension of the entities
+  to which it is associated. The has_attribute() function tells the
+  user whether a given Attribute is defined or not.
+</P>
+<P>
+  Some Attributes are provided directly by implementations of Mesh,
+  to provide the user with data that only exists in some cases, such
+  as the "Parent" attribute of meshes that have been refined. Other
+  Attributes can be added by the user, for storing flags, material
+  numbers, and other data associated with the mesh. In some cases, it
+  is possible to control mesh algorithms through the use of
+  Attributes: for instance, the type of refinement to be used in the
+  refine() function can be specified through an Attribute.
+</P>
+<P>
+  \TODO TODO: what are attributes used for concretely? Naming scheme for attributes?
+</P>
+<H2>Communication</H2>
+\TODO TODO: Write me
+<H2>Partitioning and Distribution</H2>
+\TODO TODO: Finish me
+<P>
+  The standard partitioning in the mesh is used through the function
+</P>
+\code
+  Mesh* partitioned_mesh = mesh->partition(MPI::COMM_WORLD);
+\endcode
+<P>
+  It has to be called on ALL processes and provides you with the
+  partitioned mesh object on each process.
+</P>
+<P>
+  If a special partition is needed, it is necessary to build up the
+  communication and partitioning structure explicitly. 
+</P>
+<H2>Visualization</H2>
+<P>Visualizing data on the mesh which is related to entities that exist
+  in the mesh, is a very easy task. In our preferred VTK format, it is
+  possible to add any kind of data array to different entities. In the
+  Mesh, this is replicated through the Boost Any Class (AnyVector in
+  our framework), which is more or less type independent. This means
+  that one can add any type of data to the mesh without explicitly
+  specifying the type (integer, float, double, &hellip;) beforehand.
+</P>
+\code
+  mesh->set_data(std::string("ArrayName"), tdim, array);
+\endcode
+<P>
+  To tell the writer to take this array into account, one needs to
+  call
+</P>
+\code
+  writer.add_data_array(std::string("ArrayName"), tdim);
+\endcode
+\see /hiflow/test/visualization_of_random_data_demo.cc
+
+@}
+**/
+}
+} 

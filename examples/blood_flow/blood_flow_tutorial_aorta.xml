@@ -1,0 +1,105 @@
+<Param>
+  <OutputPrefix>blood_flow_tutorial_aorta</OutputPrefix>
+  <Mesh>
+    <Filename>aorta_cfd.vtu</Filename>
+    <InitialRefLevel>0</InitialRefLevel>
+  </Mesh>
+  <LinearAlgebra>
+    <NameMatrix>CoupledMatrix</NameMatrix>
+    <NameVector>CoupledVector</NameVector>
+    <Platform>CPU</Platform>
+    <Implementation>Naive</Implementation>
+    <MatrixFormat>CSR</MatrixFormat>
+  </LinearAlgebra>
+  <FlowModel>
+    <Density>1060.0</Density>
+    <Viscosity>4e-6</Viscosity>
+    <StabilizationFactor>1</StabilizationFactor>
+  </FlowModel>
+  <FiniteElements>
+    <VelocityDegree>2</VelocityDegree>
+    <PressureDegree>1</PressureDegree>
+  </FiniteElements>
+  <Instationary>
+    <Timestep>0.001</Timestep>
+    <Endtime>2.1</Endtime>
+    <Theta>0.5</Theta>
+    <SmoothStartTime>0.01</SmoothStartTime>
+    <Period>0.9925</Period>
+    <VisualizationInterval>10</VisualizationInterval>
+  </Instationary>
+  <Boundary>
+    <WallMaterial>1</WallMaterial>
+  	<NumberOfPoiseuilleBoundaries>3</NumberOfPoiseuilleBoundaries>
+      <Poiseuille_0>
+        <Material>3</Material>
+        <Center>0.051417 0.011769 0.02511</Center>
+        <Normal>0.273287 0.921329 0.27652</Normal>
+        <Radius>0.004263</Radius>
+        <Exponent>4</Exponent>
+        <TimeStamps>0 0.065 0.105 0.145 0.185 0.225 0.265 0.3075 0.3475 0.3875 0.4275 0.4675 0.5075 0.5475 0.5875 0.63 0.67 0.71 0.75 0.79 0.83 0.87 0.91 0.9525 0.9925</TimeStamps>
+        <FlowRates>4.714e-07 1.17777e-05 3.03006e-05 3.30955e-05 1.96147e-05 3.9588e-06 -3.001e-07 7.372e-07 -4.2516e-06 -2.948e-06 2.2176e-06 4.9708e-06 4.3795e-06 2.3557e-06 1.1774e-06 1.0786e-06 7.834e-07 -7.892e-07 -9.738e-07 -1.6502e-06 -6.962e-07 -1.0416e-06 2.017e-07 1.5979e-06 4.714e-07</FlowRates>
+      </Poiseuille_0>
+      <Poiseuille_1>
+        <Material>5</Material>
+        <Center>0.021028 0.022561 0.03793</Center>
+        <Normal>0.413106 0.833932 -0.36592</Normal>
+        <Radius>0.005194</Radius>
+        <Exponent>4</Exponent>
+        <TimeStamps>0 0.065 0.105 0.145 0.185 0.225 0.265 0.3075 0.3475 0.3875 0.4275 0.4675 0.5075 0.5475 0.5875 0.63 0.67 0.71 0.75 0.79 0.83 0.87 0.91 0.9525 0.9925</TimeStamps>
+        <FlowRates>4.7748e-06 2.93323e-05 6.30213e-05 5.9105e-05 3.67283e-05 1.13318e-05 4.0999e-06 4.3541e-06 -3.4155e-06 -1.9476e-06 8.3685e-06 1.49459e-05 1.30338e-05 7.9946e-06 6.2867e-06 3.2463e-06 3.6323e-06 2.0755e-06 2.3877e-06 1.3787e-06 1.8985e-06 5.86e-07 2.2512e-06 3.4707e-06 4.7748e-06</FlowRates>
+      </Poiseuille_1>
+      <Poiseuille_2>
+        <Material>4</Material>
+        <Center>0.032497 0.115179 0.03245</Center>
+        <Normal>0.274535 0.881571 -0.384</Normal>
+        <Radius>0.012616</Radius>
+        <Exponent>4</Exponent>
+        <TimeStamps>0 0.065 0.105 0.145 0.185 0.225 0.265 0.3075 0.3475 0.3875 0.4275 0.4675 0.5075 0.5475 0.5875 0.63 0.67 0.71 0.75 0.79 0.83 0.87 0.91 0.9525 0.9925</TimeStamps>
+        <FlowRates>-1.1738e-06 0.0002332722 0.0005354451 0.000471919 0.0004205201 0.0003201786 0.0002293192 0.00011189 -1.82379e-05 -4.1052e-06 1.61756e-05 3.31616e-05 2.17043e-05 9.2481e-06 5.11e-08 9.895e-07 2.2393e-06 3.8088e-06 -4.6074e-06 6.859e-06 -3.5247e-06 2.1e-09 6.2072e-06 9.6348e-06 -1.1738e-06</FlowRates>
+      </Poiseuille_2>
+      <NumberOfWindkesselBoundaries>1</NumberOfWindkesselBoundaries>
+      <Windkessel_0>
+        <Material>2</Material>
+	    <Resistance>1185e5</Resistance>
+	    <Compliance>1.37e-8</Compliance>
+        <InitialPressure>0</InitialPressure>
+        <Decay>0.1</Decay>
+      </Windkessel_0>
+  </Boundary>
+  <NonlinearSolver>
+    <Name>Newton</Name>
+    <MaxIterations>10</MaxIterations>
+    <AbsTolerance>1.e-10</AbsTolerance>
+    <RelTolerance>1.e-10</RelTolerance>
+    <DivTolerance>1.e5</DivTolerance>
+    <ForcingStrategy>EisenstatWalker1</ForcingStrategy>
+    <InitialForcingValue>1.e-2</InitialForcingValue>
+    <MaxForcingValue>0.9</MaxForcingValue>
+    <EW2Gamma>1.0</EW2Gamma>
+    <EW2Alpha>1.0</EW2Alpha>
+    <DampingStrategy>Armijo</DampingStrategy>
+    <InitialDampingValue>1.0</InitialDampingValue>
+    <MinimalDampingValue>1.e-4</MinimalDampingValue>
+    <ArmijoDecrease>0.5</ArmijoDecrease>
+    <SufficientDecrease>1.e-4</SufficientDecrease>
+    <MaxDampingIterations>10</MaxDampingIterations>
+  </NonlinearSolver>
+  <LinearSolver>
+    <Name>GMRES</Name>
+    <MaxIterations>1000</MaxIterations>
+    <AbsTolerance>1.e-10</AbsTolerance>
+    <RelTolerance>1.e-3</RelTolerance>
+    <DivTolerance>1.e6</DivTolerance>
+    <SizeBasis>200</SizeBasis>
+    <Preconditioning>ILUPP</Preconditioning>
+     <ILUPP>
+      <PreprocessingType>0</PreprocessingType>
+      <PreconditionerNumber>11</PreconditionerNumber>
+      <MaxMultilevels>20</MaxMultilevels>
+      <MemFactor>0.8</MemFactor>
+      <PivotThreshold>2.75</PivotThreshold>
+      <MinPivot>0.05</MinPivot>
+     </ILUPP>
+  </LinearSolver>
+</Param>

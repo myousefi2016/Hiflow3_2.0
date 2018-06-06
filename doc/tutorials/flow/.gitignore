@@ -1,0 +1,16 @@
+*.pdf
+*.aux
+*.log
+*.gz
+*.bak
+*.bbl
+*.blg
+Makefile
+*.inp
+meshes
+*.xml
+*.inp
+*.vtu
+*.xml
+*.toc
+

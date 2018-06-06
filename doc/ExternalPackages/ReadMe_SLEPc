@@ -1,0 +1,46 @@
+SLEPc requires the following packages to be installed:
+	libtool (>= 2.4.2)
+	autoconf
+
+Export the PETSc install directory:
+$: export PETSC_DIR=<path to PETSc installation destination>
+$: export PETSC_ARCH=
+
+in SLEPc base directory:
+
+CONFIGURE:
+$: ./configure --prefix=<path to SLEPc install directory> --download-arpack  
+
+This command will configure SLEPc in DEBUG mode and will download:
+	arpack
+
+Caution: automatic build of eigenvalue examples does NOT work if the option "--download-arpack  " is set
+
+Additional packages und interfaces can be obtained by 
+	--download-<package name>
+
+To compile PETSc in RELEASE mode, add the options 
+	--with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native' 
+
+MAKE: 
+$: make
+
+INSTALL:
+$: make install
+
+TEST:
+$: make test
+
+To configure HiFlow, use
+
+SLEPC_DIR = <path to SLEPC installation destination>
+SLEPC_INCLUDE_DIR = <path to SLEPC installation destination>/include
+SLEPC_LIBRARY = <path to SLEPC installation destination>/lib/libslepc.so 
+
+To run an application using SLEPc, add the following line to ~/.bashrc
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<path to SLEPC install directory>/lib/
+
+and run 
+> source ~/.bashrc
+

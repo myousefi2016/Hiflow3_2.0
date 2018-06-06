@@ -1,0 +1,246 @@
+<Param>
+    <PathPrefix>./</PathPrefix>
+    <Mesh>
+        <Filename>in/unit_square.inp</Filename>        <!-- mesh_wavetank_3D.inp, wavetank_cart.inp, wavetank.inp, mesh_tehd_3D.inp -->
+        <SequentialRefLevel>2</SequentialRefLevel>
+        <InitialRefLevel>4</InitialRefLevel>
+        <RestartAt>-1</RestartAt>
+        <NxPeriodicity>
+            <h>4.</h> 
+            <Master>6.283185</Master>
+            <Slave>0.</Slave>
+        </NxPeriodicity>
+    </Mesh>
+    <LinearAlgebra>
+        <Platform>CPU</Platform>
+        <Implementation>Naive</Implementation>
+        <MatrixFormat>CSR</MatrixFormat>
+        <DOFOrdering>Classic</DOFOrdering>                        <!-- Classic, Cuthill, King -->
+    </LinearAlgebra>
+    <TimeDiscretization>
+        <EndTime>5.0</EndTime>
+        <DeltaT>0.1</DeltaT>
+        <Method>GalerkinCD</Method>                                <!-- Theta, GalerkinCD -->
+        <Theta>1.0</Theta>            
+        <ModifiedGalerkin>1</ModifiedGalerkin>
+        <DualMethod>GalerkinDC</DualMethod>                        <!-- Theta, GalerkinCD (cont trial, discont. test), GalerkinDC(discont trial, cont test) -->
+        <DualTheta>0.5</DualTheta>
+    </TimeDiscretization> 
+    <InitialCondition>
+    <Type>Constant</Type>                                      <!-- "Zero" or "Stationary" or "Load" or "NoDEP" or "Yoshikawa" -->
+        <FilePrefix>start/Zero</FilePrefix>                    <!-- Name of IC to be loaded or stored: "Zero" or "Stationary" or "NoDEP" -->        
+    </InitialCondition>   
+    <Visualization>
+        <VisTimestep>1</VisTimestep>
+        <PostprocessingStep>0</PostprocessingStep>
+        <FilePrefix>out/ConvDiff_primal</FilePrefix>
+        <DualFilePrefix>out/ConvDiff_dual</DualFilePrefix>
+    </Visualization>    
+    <PostProcessing>
+        <Mode>Primal</Mode>
+        <PPTimeStep>1</PPTimeStep>        
+        <InitialStep>0</InitialStep>
+        <FinalStep>4</FinalStep>            
+        <VisTimeStep>100</VisTimeStep>
+        <Visualize>0</Visualize>
+        <SnapshotsIn>snapshots/snapshots_dual</SnapshotsIn>
+        <SnapshotsGroup>solution_dual</SnapshotsGroup>
+        <SnapshotsPrefix>snapshot_dual_</SnapshotsPrefix>
+    </PostProcessing>
+    <BackUp>
+        <BackupTimestep>1</BackupTimestep>
+        <PrimalMode>Calculate</PrimalMode>
+        <DualMode>Calculate</DualMode>
+        <NPrimalOffset>7</NPrimalOffset>    
+        <NDualOffset>1</NDualOffset>
+        <PrimalSnapshotsIn>snapshots/snapshots_primal</PrimalSnapshotsIn>
+        <PrimalSnapshotsOut>snapshots/snapshots_primal</PrimalSnapshotsOut>
+        <PrimalSnapshotsGroupIn>solution_primal</PrimalSnapshotsGroupIn>
+        <PrimalSnapshotsGroupOut>solution_primal</PrimalSnapshotsGroupOut>
+        <PrimalSnapshotsPrefixIn>snapshot_primal_</PrimalSnapshotsPrefixIn>
+        <PrimalSnapshotsPrefixOut>snapshot_primal_</PrimalSnapshotsPrefixOut>
+        <PrimalSnapshotsTimeStepIn>1</PrimalSnapshotsTimeStepIn>
+        <PrimalSnapshotsTimeStepOut>1</PrimalSnapshotsTimeStepOut>
+        <DualSnapshotsIn>snapshots/snapshots_dual</DualSnapshotsIn>
+        <DualSnapshotsOut>snapshots/snapshots_dual</DualSnapshotsOut>
+        <DualSnapshotsGroupIn>solution_dual</DualSnapshotsGroupIn>
+        <DualSnapshotsGroupOut>solution_dual</DualSnapshotsGroupOut>
+        <DualSnapshotsPrefixIn>snapshot_dual_</DualSnapshotsPrefixIn>
+        <DualSnapshotsPrefixOut>snapshot_dual_</DualSnapshotsPrefixOut>
+        <DualSnapshotsTimeStepIn>1</DualSnapshotsTimeStepIn>
+        <DualSnapshotsTimeStepOut>1</DualSnapshotsTimeStepOut>
+    </BackUp>             
+    <Adaptivity>
+        <NumAdaptionCycles>2</NumAdaptionCycles>
+        <GoalFunctional>
+            <ActiveFinalTime>1</ActiveFinalTime>
+            <ActiveInterval>0</ActiveInterval>
+            <tMin>0.0</tMin>                                    <!-- Start Time in seconds -->
+            <tMax>120.0</tMax>                                    <!-- End Time in seconds -->    
+            <xMin>0.1</xMin>                                    
+            <xMax>0.2</xMax>                                    
+            <yMin>0.8</yMin>                                    
+            <yMax>0.9</yMax>                                    
+            <zMin>0.0</zMin>                                    
+            <zMax>1.0</zMax>                                    
+            <Scale>1</Scale>                                    <!-- Multiply goal functional by constant factor -->
+        </GoalFunctional>    
+        <SpatialAdaption>
+            <Type>FixedError</Type>                             <!-- Uniform, FixedFraction, FixedError -->
+            <CoarsenMarker>-1</CoarsenMarker>                   <!-- Coarsen a family of cells if sum_{cell_in_family} (coarsen_flag(cell)) >= #(cells_in_family) -->
+            <BalanceConnectionMode>2</BalanceConnectionMode>    <!-- 2: vertex, 1: edge, 0: facet -->
+            <FixedFraction>                                     <!-- Refine / coarsen fxied fraction of cells. This is done completely locally!! -->
+                <CoarsenThreshold>4000</CoarsenThreshold>       <!-- Start coarsening when more than CoarsenThreshold cells are in the mesh -->
+                <FractionToRefine>0.2</FractionToRefine>        <!-- Refine the FractionToRefine * 100% cells with highest error indicator -->
+                <FractionToCoarsen>0.2</FractionToCoarsen>      <!-- Mark the FractionToCoarsen * 100% cells with lowest error indicator for coarsening -->
+            </FixedFraction>
+            <FixedError>                                        <!-- Refine cells whose error indicator is > tol / num_cells. -->
+                <Tolerance>5e-8</Tolerance>                     <!-- Desired accuracy -->
+                <CoarsenThreshold>200</CoarsenThreshold>        <!-- Start coarsening when more than CoarsenThreshold cells are in the mesh -->
+                <ConvergenceOrder>1</ConvergenceOrder>          <!-- Assumed convergence order of method w.r.t. h -->
+            </FixedError>
+        </SpatialAdaption>
+        <TemporalAdaption>
+            <Type>FixedError</Type>                          <!-- Uniform, FixedFraction -->
+            <CoarsenMarker>-1</CoarsenMarker>                   <!-- Coarsen a family of cells if sum_{cell_in_family} (coarsen_flag(cell)) >= #(cells_in_family) -->
+            <FixedFraction>
+                <CoarsenThreshold>300</CoarsenThreshold>        <!-- Start coarsening when more than CoarsenThreshold intervals are in the time mesh -->
+                <FractionToRefine>0.2</FractionToRefine>        <!-- Refine the FractionToRefine * 100% intervals with highest error indicator -->
+                <FractionToCoarsen>0.2</FractionToCoarsen>      <!-- Mark the FractionToCoarsen * 100% intervals with lowest error indicator for coarsening -->
+            </FixedFraction>
+            <FixedError>                                        <!-- Refine cells whose error indicator is > tol / num_cells. -->
+                <Tolerance>2e-6</Tolerance>                     <!-- Desired accuracy -->
+                <CoarsenThreshold>50</CoarsenThreshold>        <!-- Start coarsening when more than CoarsenThreshold cells are in the mesh -->
+                <ConvergenceOrder>1</ConvergenceOrder>          <!-- Assumed convergence order of method w.r.t. h -->
+            </FixedError>
+        </TemporalAdaption>
+        <DynamicMesh>
+            <Type>FixedFraction</Type>                <!-- None: just one mesh, Fixed: use user-provied mesh change times, adaptive: -->
+            <StartChanges>Single</StartChanges>            <!-- Load: , Single --> 
+            <MaxMeshNumber>20</MaxMeshNumber>
+            <MinStepsBetweenChanges>4</MinStepsBetweenChanges>
+            <FixedFraction>                           <!-- Divide each section of meshes into a fixed number of new meshes in each dwr iteration -->
+                <GrowthRate>2</GrowthRate>            <!-- Number of used meshes = growthRate * adaption_counter -->
+            </FixedFraction>
+            <FixedError>                    <!-- Change mesh if relative difference of subsequent red_space_indicators is above tolerance -->
+                <RelChangeThreshold>1e-1</RelChangeThreshold>    
+            </FixedError>
+        </DynamicMesh>
+        <Estimator>
+            <NoDWR>0</NoDWR>
+            <PrimalIndicator>1</PrimalIndicator>
+            <DualIndicator>1</DualIndicator>
+            <SpatialIndicator>1</SpatialIndicator>
+            <TemporalIndicator>1</TemporalIndicator>
+            <UseCauchySchwarz>0</UseCauchySchwarz>
+            <ReductionType>SUM</ReductionType>                  <!-- SUM or MAX -->
+            <TimeQuadOrder>2</TimeQuadOrder>
+        </Estimator>
+    </Adaptivity>
+    <Perturbation>
+        <PerturbIC>0</PerturbIC>
+        <PerturbEF>0</PerturbEF>
+        <TempType>0</TempType>                                    <!-- -1: none, 0: L2, 1: H1_0, 2: H1 -->
+        <ExternalForce>
+            <Scale>1.</Scale>
+            <SnapshotsIn>snapshots/snapshots_dual</SnapshotsIn>
+            <SnapshotsGroup>solution_dual</SnapshotsGroup>
+            <SnapshotsPrefix>snapshot_dual_</SnapshotsPrefix>    
+        </ExternalForce>
+        <InitialCondition>
+            <Type>Create</Type>                                    <!-- Load: Use already computed perturbation, see below, Dual: use Dual at t=0, Create: create perturbation according to parameters --> 
+            <Scale>1.</Scale>
+        <SnapshotsIn>snapshots/snapshots_ic_perturb</SnapshotsIn>    <!-- Here, the perturbation will be loaded from or stored to -->
+            <SnapshotsGroup>solution_ic_perturb</SnapshotsGroup>
+            <SnapshotsPrefix>snapshot_ic_perturb_</SnapshotsPrefix>    
+        </InitialCondition>    
+        <Test>
+            <PerturbedSolution>
+                <SnapshotsIn>snapshots/snapshots_primal</SnapshotsIn>
+                <SnapshotsGroup>solution_primal</SnapshotsGroup>
+                <SnapshotsPrefix>snapshot_primal_</SnapshotsPrefix>
+            </PerturbedSolution>
+            <DualSolution>
+                <SnapshotsIn>snapshots/snapshots_dual</SnapshotsIn>
+                <SnapshotsGroup>solution_dual</SnapshotsGroup>
+                <SnapshotsPrefix>snapshot_dual_</SnapshotsPrefix>
+            </DualSolution>        
+            <TimeStep>10</TimeStep>
+            <FinalStep>3200</FinalStep>
+        </Test>
+    </Perturbation>
+    <PrimalNonlinearSolver>                                            
+        <Stationary>
+            <MaximumIterations>15</MaximumIterations>                    
+            <AbsoluteTolerance>1.e-20</AbsoluteTolerance>       <!-- |Omega| ~ e-5 -->            
+            <RelativeTolerance>1.e-14</RelativeTolerance>
+            <PressureFilter>0</PressureFilter>
+            <DampingStrategy>Armijo</DampingStrategy>           <!-- "Armijo", "None" -->
+            <NumberNudgeSteps>5</NumberNudgeSteps>
+            <NudgeFactor>10</NudgeFactor>
+            <StationaryInstationaryNudgeFactor>1.</StationaryInstationaryNudgeFactor>
+        </Stationary>
+        <TimeLoop>
+            <MaximumIterations>10</MaximumIterations>                    
+            <AbsoluteTolerance>1.e-20</AbsoluteTolerance>       <!-- |Omega| ~ e-5 -->            
+            <RelativeTolerance>1.e-10</RelativeTolerance>
+            <PressureFilter>0</PressureFilter>
+            <DampingStrategy>None</DampingStrategy>             <!-- "Armijo", "None" -->
+            <nNumberNudgeSteps>6</nNumberNudgeSteps>
+            <nNumberTimestepsPerNudgeStep>10</nNumberTimestepsPerNudgeStep>
+            <nNudgeFactor>5</nNudgeFactor>
+        </TimeLoop>  
+        <DivergenceLimit>1.e6</DivergenceLimit>
+        <ForcingStrategy>EisenstatWalker</ForcingStrategy>      <!-- "EisenstatWalker", "None" -->
+        <EisenstatWalker>
+            <Type>1</Type>
+            <InitialForcingTerm>1.e-4</InitialForcingTerm>
+            <MaxForcingTerm>1.e-5</MaxForcingTerm>
+            <Gamma>1.</Gamma>
+            <Alpha>1.618</Alpha>
+        </EisenstatWalker>
+        <ArmijoUpdate>
+            <Initial>1.</Initial>
+            <Minimal>1.e-4</Minimal>
+            <Decrease>0.5</Decrease>
+            <SuffDec>1.e-4</SuffDec>
+            <MaxLoop>10</MaxLoop>
+        </ArmijoUpdate>
+    </PrimalNonlinearSolver>    
+    <PrimalLinearSolver>
+        <MaximumIterations>300</MaximumIterations>
+        <AbsoluteTolerance>1.e-22</AbsoluteTolerance>
+        <RelativeTolerance>1.e-10</RelativeTolerance>
+        <DivergenceLimit>1.e6</DivergenceLimit>
+        <BasisSize>300</BasisSize>
+        <Preconditioning>1</Preconditioning>
+        <UpdateEveryNewtonStep>1</UpdateEveryNewtonStep>
+        <UpdateEverynthTimeStep>1</UpdateEverynthTimeStep>
+        <OuterPressureFilter>0</OuterPressureFilter>            <!-- Zero Mean pressure in each time step --> 
+        <InnerPressureFilter>0</InnerPressureFilter>            <!-- Zero Mean pressure in each outer FGMRES step --> 
+        <PrintLevel>3</PrintLevel>
+    </PrimalLinearSolver>
+    <DualLinearSolver>                                            
+        <MaximumIterations>300</MaximumIterations>                    
+        <AbsoluteTolerance>1.e-20</AbsoluteTolerance>            <!-- |Omega| ~ e-5 -->            
+        <RelativeTolerance>1.e-10</RelativeTolerance>
+        <DivergenceLimit>1.e-1</DivergenceLimit>
+        <BasisSize>300</BasisSize>
+        <Preconditioning>1</Preconditioning>
+        <OuterPressureFilter>0</OuterPressureFilter>            <!-- Zero Mean pressure in each time step --> 
+        <InnerPressureFilter>0</InnerPressureFilter>            <!-- Zero Mean pressure in each outer FGMRES step --> 
+        <TestStep>1</TestStep>
+    </DualLinearSolver>
+    <ILUPP>
+        <UpdateEveryNewtonStep>1</UpdateEveryNewtonStep>
+        <UpdateEverynthTimeStep>1</UpdateEverynthTimeStep>
+        <PreprocessingType>0</PreprocessingType>
+        <NPreconditionerNumber>1010</NPreconditionerNumber>
+        <PreconditionerNumber>11</PreconditionerNumber>
+        <MaxMultilevels>20</MaxMultilevels>
+        <MemFactor>0.8</MemFactor>
+        <NPivotThreshold>5.</NPivotThreshold>
+        <PivotThreshold>1.75</PivotThreshold>                    <!-- 1.75, 2.75 -->
+        <MinPivot>0.01</MinPivot>                                <!-- 0.01, 0.05 -->
+    </ILUPP>  
+</Param>

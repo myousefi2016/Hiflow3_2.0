@@ -1,0 +1,63 @@
+PETSc should be installed in the following way:
+
+Type inside the PETSC base folder: 
+
+CONFIGURE:
+$: ./configure --prefix=<path to PETSC install destination> --with-shared-libraries=1 --with-cc=<path to MPI compiler directory >/mpicc \
+	--with-fc=<path to MPI compiler directory >/mpif90 --with-cxx=<path to MPI compiler directory >/mpicxx --with-mpiexec=<path to MPI compiler directory >/mpiexec \
+	--download-scalapack --download-fblaslapack --download-suitesparse --download-mumps --with-parmetis-include=<path to parmetis base directory>/include \
+	with-parmetis-lib="-L<path to parmetis library directory> -lparmetis -lmetis" --with-metis-include=<path to metis base directory>/metis-5.1.0/include \
+	with-metis-lib="-L<path to parmetis library directory> -lmetis -lmetis"
+
+with correct paths:
+	<path to MPI compiler directory >
+  	<path to PETSC install destination>
+	<path to parmetis base directory>
+	<path to metis base directory>
+	<path to parmetis library directory>
+	<path to metis library directory>
+
+Alternatively: Use --with-mpi-dir=<path to mpi directory, e.g. /usr/lib/openmpi> instead of --with-cc=, --with-fc=, etc 
+
+This command will configure PETSc in DEBUG mode and will download:
+	fblaslapack
+	Mumps
+	Umfpack
+	scalapack
+
+Additional packages und interfaces can be obtained by 
+	--download-<package name>
+
+To compile PETSc in RELEASE mode, add the options 
+	--with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native' 
+
+To compile PETSc with complex numbers add the option --with-scalar-type=complex. In this case, the option PETSC_COMPLEX=ON hast to be set in ccmake.
+CAUTION: The PETSc interface of Hiflow is currently not capable of dealing with complex PETSc, therefore, it is switched off and the PETSc Linear Algebra can't be used. 
+However, the eigenvalue solver routines based on SLEpc can deal with complex PETSc, since they directly use the PETSc API instead of the Hiflow interface.
+Actually, complex PETSc is mandatory for non-symmetric eigenvalue problems.
+
+
+MAKE: 
+$: make
+
+INSTALL:
+$: make install
+
+TEST:
+$: make test
+
+
+To configure HiFlow, use
+
+PETSC_DIR = <path to PETSC installation destination>
+PETSC_INCLUDE_DIR = <path to PETSC installation destination>/include
+PETSC_LIBRARY = <path to PETSC installation destination>/lib/libpetsc.so
+
+To run an application using PETSc, add the following line to ~/.bashrc
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<path to PETSC install directory>/lib/
+
+and run 
+> source ~/.bashrc
+
+

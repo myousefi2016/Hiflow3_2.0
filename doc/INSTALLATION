@@ -1,0 +1,56 @@
+To install HiFlow your system must comply with the following requirements:
+
+- Compiler:
+  e.g. sudo apt-get install build-essential
+
+- CMake compile system:
+  You should use the latest version, download from
+  http://cmake.org/cmake/resources/software.html
+
+- Boost library version:
+  e.g. sudo apt-get install libboost-dev
+  For correct compilation and execution of your own programs, you need to include the 
+  contrib/boost_libraries/boost and contrib/boost_libraries/boost/tr1 directories 
+  explicitly during compilation.
+
+- MPI implementation:
+  You need an MPI implementation even for sequential work.
+  e.g. sudo apt-get install mpi-default-dev
+
+- CBLAS option: 
+  The CBLAS library depends on BLAS. Therefore, when providing the include directory and the 
+  library for CBLAS, you must also provide the BLAS library used for CBLAS. Press [t] to 
+  toggle advanced mode in the ccmake GUI. With a custom build from the netlib.org sources, 
+  the entry for the CBLAS library could look like this:
+      CBLAS_LIBRARY /usr/local/lib/libcblas.a;/usr/local/lib/libblas.a
+
+- CLAPACK option:
+  The CLAPACK library depends on CBLAS or BLAS. For example, you can build CLAPACK from netlib.org 
+  sources based on an existing CBLAS installation, hereby using the f2c library and the CBLAS 
+  wrapper library coming with CLAPACK. In the ccmake GUI, you must provide the CLAPACK includes 
+  and library, and also the f2c and CBLAS wrapper libraries. It could look like this:
+      CLAPACK_LIBRARIES /usr/local/lib/libclapack.a;/usr/local/lib/libcblaswr.a;/usr/local/lib/libf2c.a
+  Also, you might need to provide a linker flag for the FORTRAN library to build the executables 
+  (tests and examples), depending on the compiler you use. With GCC, this is:
+      CMAKE_EXE_LINKER_FLAGS -lgfortran
+
+- HDF5 option:
+  Make sure, that your HDF5 library is compiled with interface version 1.6. Other interfaces versions
+  are not supported so far.
+
+
+Documentation
+=============
+
+To create the documentation you need Doxygen. Installation can be done
+by f.e.
+
+  sudo apt-get install doxygen
+  sudo apt-get install graphviz   // for the dot tool to create images
+
+To create the documentation change into <HIFLOWDIR>/doc and type
+
+  doxygen Doxyfile
+
+The documentation files are located in <HIFLOWDIR>/doc/doxygen/html and you might
+open the index.html or hierarchy.html files for example.

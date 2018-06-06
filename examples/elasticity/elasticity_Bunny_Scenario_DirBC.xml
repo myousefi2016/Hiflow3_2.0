@@ -1,0 +1,69 @@
+<Param>
+  <OutputPathAndPrefix>elasticity_test</OutputPathAndPrefix>
+  <Mesh>
+    <Filename>stanford_bunny.inp</Filename>
+    <InitialRefLevel>0</InitialRefLevel>
+  </Mesh>
+  
+  <LinearAlgebra>
+    <Platform>CPU</Platform>
+    <Implementation>Naive</Implementation>
+    <MatrixFormat>CSR</MatrixFormat>
+  </LinearAlgebra>
+  
+  <ElasticityModel>
+    <density>1070</density>
+    <lambda>259259</lambda> <!-- 259259(PR=.35), 49329(PR=.49) -->
+    <mu>111111</mu> <!-- 111111(PR=.35), 1007(PR=.49) -->
+    <gravity>.0</gravity>
+  </ElasticityModel>
+  
+  <QuadratureOrder>2</QuadratureOrder>
+  
+  <FiniteElements>
+    <DisplacementDegree>1</DisplacementDegree>
+  </FiniteElements>
+  
+  <Instationary>
+    <SolveInstationary>0</SolveInstationary> <!-- boolean 0 or 1 -->
+    <DampingFactor>1.0</DampingFactor> <!-- should remain 1.0 -->
+    <RayleighAlpha>0.1</RayleighAlpha> <!-- MassFactor -->
+    <RayleighBeta>0.2</RayleighBeta> <!-- StiffnessFactor -->
+    <Method>Newmark</Method> <!-- ImplicitEuler, CrankNicolson, ExplicitEuler, Newmark, ... -->
+    <DeltaT>0.1</DeltaT> <!-- smaller: 0.05 -->
+    <MaxTimeStepIts>20</MaxTimeStepIts> <!-- higher: 20 -->
+  </Instationary>
+  
+  <Boundary>
+    <DirichletMaterial1>110</DirichletMaterial1> <!-- fixed boundary -->
+    <DirichletMaterial2>112</DirichletMaterial2> <!-- displaced boundary -->
+    <DirichletMaterial3>114</DirichletMaterial3> <!-- displaced boundary -->
+  </Boundary>
+  
+  <LinearSolver>
+    <SolverName>CG</SolverName> <!-- CG (+ SGAUSS_SEIDEL etc) or GMRES (+ ILU2) or ... -->
+    <MaximumIterations>1000</MaximumIterations>
+    <AbsoluteTolerance>1.e-8</AbsoluteTolerance>
+    <RelativeTolerance>1.e-20</RelativeTolerance>
+    <DivergenceLimit>1.e6</DivergenceLimit>
+    <BasisSize>1000</BasisSize>
+    <Preconditioning>1</Preconditioning> <!-- boolean 0 or 1 -->
+    <PreconditionerName>SGAUSS_SEIDEL</PreconditionerName> <!-- NOPRECOND = 0, JACOBI = 1, GAUSS_SEIDEL = 2, SGAUSS_SEIDEL = 3, SOR, SSOR, ILU, ILU2, ILU_P, ILUpp -->
+    <Omega>2.5</Omega>
+    <ILU_p>2.5</ILU_p>
+  </LinearSolver>
+  <ILUPP> <!-- use GaussSeidel / Jacobi / SSOR instead -->
+    <PreprocessingType>0</PreprocessingType>
+    <PreconditionerNumber>11</PreconditionerNumber>
+    <MaxMultilevels>20</MaxMultilevels>
+    <MemFactor>0.8</MemFactor>
+    <PivotThreshold>2.75</PivotThreshold>
+    <MinPivot>0.05</MinPivot>
+  </ILUPP>
+  
+  <Backup>
+    <Restore>0</Restore>
+    <LastTimeStep>160</LastTimeStep>
+    <Filename>backup.h5</Filename>
+  </Backup>
+</Param>

@@ -1,0 +1,24 @@
+<Param>
+    <Mesh>
+        <Filename2>unit_square_2_cells.inp</Filename2>
+        <Filename3>unit_cube_2_cells.inp</Filename3>
+        <InitialRefLevel>4</InitialRefLevel>
+        <FinalRefLevel>5</FinalRefLevel>
+        <!-- 1: uniform, 2: local -->
+        <Refinement>2</Refinement>
+        <!-- Start coarsening when more than CoarsenThreshold cells are in the mesh -->
+        <CoarsenThreshold>400</CoarsenThreshold> 
+        <!-- Refine the FractionToRefine * 100% cells with highest error indicator -->
+        <FractionToRefine>0.2</FractionToRefine>
+        <!-- Mark the FractionToRefine * 100% cells with lowest error indicator for coarsening -->
+        <FractionToCoarsen>0.0</FractionToCoarsen>
+        <!-- Coarsen a family of cells if sum_{cell_in_family} (coarsen_flag(cell)) >= #(cells_in_family) -->
+        <CoarsenFlag>0</CoarsenFlag> 
+        <!-- If set, cells sharing a common vertex differ in one level of refinement at most. -->
+        <!-- If not set, only cells connected via a common facet differ in one level at most. -->
+        <BalanceConnectionMode>2</BalanceConnectionMode>
+        <!-- Sets the level of refinement, starting at which the mesh is always in such a state, that all cells can be coarsened. This is realized by refining additional cells -->
+        <!-- If set to -1, no patch mode at all -->
+        <PatchModeLevel>-1</PatchModeLevel>
+    </Mesh>
+</Param>

@@ -1,0 +1,32 @@
+set(fem_SOURCES
+  femanager.cc
+  fecellwisemanager.cc
+  feinstance.cc
+  fetype.cc
+  felagrange_hex.cc
+  felagrange.cc
+  felagrange_tet.cc
+  felagrange_line.cc
+  felagrange_quad.cc
+  felagrange_tri.cc
+  felagrange_pyr.cc
+  trilinearhexahedrontransformation.cc
+  cell_transformation.cc
+  bilinearquadtransformation.cc
+  lineartriangletransformation.cc
+  linearlinetransformation.cc
+  lineartetrahedrontransformation.cc
+  linearpyramidtransformation.cc)
+
+set(fem_PUBLIC_HEADERS 
+  bilinearquadtransformation.h
+  cell_transformation.h
+  fecellwisemanager.h
+  femanager.h
+  feinstance.h
+  felagrange.h
+  fetype.h
+  lineartetrahedrontransformation.h
+  lineartriangletransformation.h
+  trilinearhexahedrontransformation.h
+  linearpyramidtransformation.h)

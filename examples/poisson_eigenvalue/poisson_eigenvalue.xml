@@ -1,0 +1,40 @@
+<Param>
+	<Mesh>
+		<Filename>unitsquare_refinelevel_3.vtu</Filename>
+		<PeriodicBoundaries>0</PeriodicBoundaries>
+		<InitialRefLevel>3</InitialRefLevel>
+		<FinalRefLevel>3</FinalRefLevel>
+		<FeDegree>1</FeDegree>
+	</Mesh>
+	<LinearAlgebra>
+		<NameMatrix>CoupledMatrix</NameMatrix>
+		<NameVector>CoupledVector</NameVector>
+		<Platform>CPU</Platform>
+		<Implementation>Naive</Implementation>
+		<MatrixFormat>CSR</MatrixFormat>
+	</LinearAlgebra>
+	<EigenSolver>
+		<!--	<Method>Arnoldi</Method> -->
+		<!-- <SpectralTransformation>None<SpectralTransformation> -->
+		<NumberOfEigenvalues>10</NumberOfEigenvalues>
+		<!-- <DesiredEigenvalues>L_MAG</DesiredEigenvalues> -->
+		<TargetValue>-1.</TargetValue>
+		<LowerBorder>-1.</LowerBorder>
+		<UpperBorder>0.</UpperBorder>
+		<MaxIterations>1000</MaxIterations>
+		<MaxSubSpaceDimension>100</MaxSubSpaceDimension>
+		<MaxProjectedDimension>100</MaxProjectedDimension>
+		<!-- <ConvergenceTest>Rel</ConvergenceTest> -->
+		<AbsTolerance>1.0e-14</AbsTolerance>
+		<RelTolerance>1.0e-8</RelTolerance>
+	</EigenSolver>
+	<LinearSolver>
+		<Name>CG</Name>
+		<SizeBasis>50</SizeBasis>
+		<Method>NoPreconditioning</Method>
+		<MaxIterations>1000</MaxIterations>
+		<AbsTolerance>1.0e-14</AbsTolerance>
+		<RelTolerance>1.0e-8</RelTolerance>
+		<DivTolerance>1.0e6</DivTolerance>
+	</LinearSolver>
+</Param>

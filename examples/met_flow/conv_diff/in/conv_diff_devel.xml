@@ -1,0 +1,145 @@
+<Param>
+    <Mesh>
+    </Mesh>
+    <FiniteElements>
+        <VelocityDegree>2</VelocityDegree>
+        <TemperatureDegree>2</TemperatureDegree>
+        <QuadratureOrder>6</QuadratureOrder>                    <!-- !! -->
+    </FiniteElements>
+    <TimeDiscretization>
+    </TimeDiscretization>    
+    <Visualization>
+        <Dimensionless>0</Dimensionless>
+        <Velocity>1</Velocity>
+        <Temperature>1</Temperature>
+    </Visualization>    
+    <PostProcessing>
+        <FlowQuantities>1</FlowQuantities>
+        <Norm>1</Norm>
+    </PostProcessing>
+    <InitialCondition>
+        <FilterAzimuthalVelocity>1</FilterAzimuthalVelocity>    <!-- Set azimuthal velocity component manually to zero -->            
+    </InitialCondition>
+    <Fluid>
+        <ThermalDiffusivity>0.02</ThermalDiffusivity>        
+        <ThermalReaction>0.0</ThermalReaction>
+        <ThermalConvection>1.0</ThermalConvection>
+    </Fluid>        
+    <ExperimentSetup>                       
+        <StartTemperature>0</StartTemperature>
+        <BC>                                                    <!-- 12: right, 13: left, 11: top and bottom -->
+            <DirichletBdy1>-1</DirichletBdy1>
+            <DirichletBdy2>-1</DirichletBdy2>
+            <DirichletBdy3>-1</DirichletBdy3>
+            <DirichletBdy4>-1</DirichletBdy4>
+            <DirichletVal1>0.</DirichletVal1>
+            <DirichletVal2>0.</DirichletVal2>
+            <DirichletVal3>0.</DirichletVal3>
+            <DirichletVal4>0.</DirichletVal4>
+            <NeumannBdy1>-1</NeumannBdy1>
+            <NeumannBdy2>-1</NeumannBdy2>
+            <NeumannBdy3>-1</NeumannBdy3>
+            <NeumannBdy4>-1</NeumannBdy4>
+            <NeumannVal1>0.</NeumannVal1>
+            <NeumannVal2>0.</NeumannVal2>
+            <NeumannVal3>0.</NeumannVal3>
+            <NeumannVal4>0.</NeumannVal4>
+        </BC>
+        <Convection>
+            <Type>Rotation</Type>                               <!-- Zero, Constant, Constant -->
+            <Magnitude>1.</Magnitude>
+            <Conv_x>-1.</Conv_x>
+            <Conv_y>0.</Conv_y>
+            <Conv_z>0.</Conv_z>
+            <Normal_x>0.</Normal_x>
+            <Normal_y>0.</Normal_y>
+            <Normal_z>-1.</Normal_z>
+            <Center_x>0.5</Center_x>
+            <Center_y>0.5</Center_y>
+            <Center_z>0.</Center_z>
+        </Convection>
+        <LocalSource>
+            <XPosition>0.7</XPosition>
+            <YPosition>0.2</YPosition>
+            <ZPosition>0.0</ZPosition>
+            <StartAt>0.</StartAt>
+            <StopAt>0.5</StopAt>
+            <Amplitude>10.</Amplitude>
+            <Width>0.1</Width>
+        </LocalSource>
+    </ExperimentSetup>        
+    <Adaptivity>
+        <GoalFunctional>
+            <Type>VarOnSub</Type>                                <!-- "VarOnSub", "KineticEnergy", "Vorticity", "HeatTransfer" -->                                    <!-- Multiply goal functional by constant factor -->
+            <HeatTransfer>
+                <Type>1</Type>                                    <!-- 0: Surface , 1: Volume InnerRadius <= radius <= OuterRadius -->
+                <Surface>12</Surface>                            <!-- 12: inner Wall, 22: outer Wall, 13: bottom, 23: top -->
+            </HeatTransfer>
+        </GoalFunctional>  
+    </Adaptivity>
+    <Perturbation>
+        <TempType>0</TempType>                                    <!-- -1: none, 0: L2, 1: H1_0, 2: H1 -->
+        <InitialCondition>
+            <Create>
+                <BoundingBox>
+                    <xMin>0.1</xMin>                                <!-- As fraction of cylinder heigth-->
+                    <xMax>0.2</xMax>
+                    <yMin>0.0</yMin>                                <!-- As fraction of gap width -->
+                    <yMax>1.0</yMax>
+                    <zMin>0.0</zMin>                            <!-- As fraction of pi -->
+                    <zMax>2.0</zMax>
+                    <EnsureXContinuity>1</EnsureXContinuity>
+                    <EnsureYContinuity>1</EnsureYContinuity>
+                    <EnsureZContinuity>1</EnsureZContinuity>
+                </BoundingBox>
+                <Temperature>
+                    <Amplitude>1.0</Amplitude>
+                    <Offset>0.</Offset>
+                    <WaveNumberPhi>0.</WaveNumberPhi>
+                    <WaveNumberRad>0.</WaveNumberRad>
+                    <WaveNumberZ>1.</WaveNumberZ>
+                </Temperature>
+            </Create>   
+        </InitialCondition>    
+    </Perturbation>
+    <Stabilization>
+        <TempSUPG>
+            <Mode>0</Mode>                                        <!-- 0: off, 1: standard, 2: DEP, 3: DEP with implicit u -->
+            <Azimuthal>0.</Azimuthal>
+            <Radial>0.</Radial>
+            <Axial>0.</Axial>
+            <Gamma>1.0</Gamma>
+        </TempSUPG>            
+    </Stabilization>
+    <PrimalNonlinearSolver>                                            
+        <Stationary>
+            <AzimuthalFilter>0</AzimuthalFilter>
+        </Stationary>
+        <TimeLoop>
+            <AzimuthalFilter>0</AzimuthalFilter>
+        </TimeLoop>  
+    </PrimalNonlinearSolver>    
+    <AMG>
+        <NumFunctions>1</NumFunctions>              <!-- Number of equations for systems of PDEs -->
+        <CycleType>1</CycleType>                    <!-- 1: V cycle, 2: W-cycle -->
+        <MaxIterations>1</MaxIterations>            <!-- if used as preconditioner: 1 -->
+        <NumDownSweeps>1</NumDownSweeps>            <!-- Number of smoother sweeps in down cycle -->
+        <NumUpSweeps>1</NumUpSweeps>                <!-- Number of smoother sweeps in up cycle -->
+        <MaxCoarseSize>5</MaxCoarseSize>            <!-- Maximum size of caorset grid -->
+        <MaxLevels>10</MaxLevels>                   <!-- Maximum number of multigrid levels -->
+        <AggNumLevels>0</AggNumLevels>              <!-- Number of levels for aggressive coarsening -->
+        <CoarseSweeps>1</CoarseSweeps>              <!-- Number of sweeps of coarse solver -->
+        <StrongThreshold>0.55</StrongThreshold>     <!-- Treshold for determining strong connections -->                                        
+        <InterpolationType>4</InterpolationType>    <!-- Typre of interpolation operator 0: classic modified, 3: direct, 4: multipass, 6: extended+i, 8: standard, 14: extened -->                    
+        <CoarsenType>6</CoarsenType>                <!-- Typre of coarsening procedure: 0: CLJP (parallel) 3: classic RS iwht 3rd pass for boundaries, 6: Falgout, 21: CGC, 22: CGC-E -->                                            
+        <CoarseSolver>9</CoarseSolver>              <!-- Solver on coarsest level, see relax type, 9: Gaussian elimination -->                    
+        <RelaxType>6</RelaxType>                    <!-- Choose smoother from list of standard smoothers, 0: jacobi, 3: forward SOR, 4: backward SOR; 6: symmetric SOR --> 
+        <RelaxWeight>0.5</RelaxWeight>              <!-- Weighting parameter for Jacobi and hybrid SOR -->
+        <SmoothType>0</SmoothType>                  <!-- Choose smoother from list of more complex smoothers 0: Schwarz, 7: Pilut, 8: Parasails,  9: Euclid --> 
+        <SmoothNumLevels>-1</SmoothNumLevels>       <!-- Complex smoother is used on level 0 (finest) to x-1 -->    
+        <SchwarzVariant>3</SchwarzVariant>          <!-- 0: hybrid MSM, only internal overlap, 1: hybrid ASM, only internal overlap, 2: ASM, 3: hybrid MSM full overlap -->
+        <SchwarzOverlap>1</SchwarzOverlap>          <!-- 0: no overlap, 1: minimal overlap, 2: overlap including all neighbours -->
+        <SchwarzDomainType>1</SchwarzDomainType>    <!-- 0: each point is a domain, 1: each node is a domain, 2: each domain is generated by agglomeration -->
+        <SchwarzUseNonSymm>0</SchwarzUseNonSymm>    <!-- Indicates that the aggregates may not be SPD for the Schwarz method -->
+    </AMG>
+</Param>

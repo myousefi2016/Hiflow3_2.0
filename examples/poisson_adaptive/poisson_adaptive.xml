@@ -1,0 +1,46 @@
+<Param>
+    <Mesh>
+        <Filename2>L_amr.inp</Filename2>
+        <Filename3>unit_cube_amr.inp</Filename3>
+        <InitialRefLevel>2</InitialRefLevel>
+        <FinalRefLevel>7</FinalRefLevel>
+        <FeDegree>1</FeDegree>
+        <!-- 1: uniform, 2: adaptive -->
+        <Refinement>2</Refinement>
+        <!-- 1: cell residuals and jump terms, 2: additional boundary terms -->
+        <Estimator>1</Estimator>
+        <!-- Refinement strategy: 1: standard: refine all cells with error indicator higher than mean error indicator, 2: refine and coarsen given fraction of cells -->
+        <Strategy>1</Strategy>
+        <!-- Start coarsening when more than CoarsenThreshold cells are in the mesh -->
+        <CoarsenThreshold>400</CoarsenThreshold> 
+        <!-- Refine the FractionToRefine * 100% cells with highest error indicator -->
+        <FractionToRefine>0.2</FractionToRefine>
+        <!-- Mark the FractionToRefine * 100% cells with lowest error indicator for coarsening -->
+        <FractionToCoarsen>0.2</FractionToCoarsen>
+        <!-- Coarsen a family of cells if sum_{cell_in_family} (coarsen_flag(cell)) >= #(cells_in_family) -->
+        <CoarsenFlag>1</CoarsenFlag> 
+        <!-- 2: cells sharing a common vertex differ in one level of refinement at most. -->
+        <!-- 1: cells sharing a common edge (3D) / vertex (2D) differ in one level of refinement at most. -->
+        <!-- 0: cells sharing a common facet differ in one level of refinement at most. -->
+        <BalanceConnectionMode>0</BalanceConnectionMode>
+        <!-- Sets the level of refinement, starting at which the mesh is always in such a state, that all cells can be coarsened. This is realized by refining additional cells -->
+        <!-- If set to -1, no patch mode at all -->
+        <PatchModeLevel>4</PatchModeLevel>
+    </Mesh>
+    <LinearAlgebra>
+        <NameMatrix>CoupledMatrix</NameMatrix>
+        <NameVector>CoupledVector</NameVector>
+        <Platform>CPU</Platform>
+        <Implementation>Naive</Implementation>
+        <MatrixFormat>CSR</MatrixFormat>
+    </LinearAlgebra>
+    <LinearSolver>
+        <Name>CG</Name>
+        <SizeBasis>50</SizeBasis>
+        <Method>NoPreconditioning</Method>
+        <MaxIterations>10000</MaxIterations>
+        <AbsTolerance>1.0e-14</AbsTolerance>
+        <RelTolerance>1.0e-12</RelTolerance>
+        <DivTolerance>1.0e6</DivTolerance>
+    </LinearSolver>
+</Param>

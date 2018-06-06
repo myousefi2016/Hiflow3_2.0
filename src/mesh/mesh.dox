@@ -1,0 +1,138 @@
+// Copyright (C) 2011-2017 Vincent Heuveline
+//
+// HiFlow3 is free software: you can redistribute it and/or modify it under the
+// terms of the European Union Public Licence (EUPL) v1.2 as published by the
+// European Union or (at your option) any later version.
+//
+// HiFlow3 is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the European Union Public Licence (EUPL) v1.2 for more
+// details.
+//
+// You should have received a copy of the European Union Public Licence (EUPL) v1.2
+// along with HiFlow3.  If not, see <https://joinup.ec.europa.eu/page/eupl-text-11-12>.
+
+namespace mesh {
+/// \class Mesh
+/// \brief Abstract base class for mesh implementations.
+/// \author Staffan Ronnas and Thomas Gengenbach
+///
+/// \details The Mesh interface is used as an abstraction for any mesh
+/// implementation. It describes an abstract Mesh, without specifying
+/// the dimension or types of the entities it contains. It is up to
+/// concrete sub-classes to provide the functionality in its
+/// interface.
+///
+/// A Mesh has a topological and a geometrical dimension. The
+/// topological dimension is the 'intuitive' concept of dimension, in
+/// that a point has topological dimension 0, a line dimension 1,
+/// etc. A Mesh of topological dimension d can contain entities of dimension 0,...,d.
+///
+/// The geometrical dimension is equal to the number of
+/// coordinates used to describe the position of a vertex.
+/// It is possible to have for instance a two-dimensional (topological
+/// dimension) mesh in three-dimensional space - e.g. the boundary
+/// faces of a hexahedral mesh. It is however required that the geometrical
+/// dimension >= topological dimension.
+///
+/// The Mesh can be seen as a container of entities. "Entity" is here
+/// a general term for all sub-objects of the Mesh. For a 3d Mesh,
+/// these sub-objects can be vertices, edges, faces and cells. The
+/// sub-objects are grouped according to their topological dimension,
+/// so that in other to specify e.g. edge number 14, the tuple
+/// (topological dimension, index) = (1, 14) must be used. In order to
+/// talk about entities in a dimension-independent way, the following
+/// terminology is used for a Mesh of topological dimension D:
+///
+/// <table>
+/// <tr>
+/// <th>Entity dimension</th>
+/// <th>Name</th>
+/// </tr>
+/// <tr>
+/// <td>0</td>
+/// <td>Vertex</td>
+/// </tr>
+/// <tr>
+/// <td>D-1</td>
+/// <td>Facet</td>
+/// </tr>
+/// <tr>
+/// <td>D</td>
+/// <td>Cell</td>
+/// </tr>
+/// </table>
+///
+/// In this way, a facet is an edge in 2d, but a face in 3d.
+///
+/// A Mesh provides a consecutive numbering of all its entities of a
+/// fixed dimension. This numbering, whose values are of type
+/// EntityNumber, starts from 0 and ends at
+/// Mesh::num_entities(dimension) - 1, is useful e.g. for storing data
+/// associated to the entities in external arrays. Additionally, each
+/// entity has an id, of type Id, which is not necessarily
+/// consecutive. This id can be used to identify entities belonging to
+/// related Mesh objects, for instance during refinement or boundary
+/// extraction. It is possible to obtain the Id from the EntityNumber
+/// through the function Mesh::get_id(), and vice versa to obtain the
+/// EntityNumber from the Id through the function Mesh::find_entity().
+///
+/// Two basic types of iteration are supported for meshes. An EntityIterator
+/// traverses all the entities of a given dimension in the mesh. For this type
+/// iteration, the Mesh interface provides the Mesh::begin() and Mesh::end() functions.
+/// It is also possible to iterate over incident entities, using an IncidentEntityIterator
+/// that can be obtained through Mesh::begin_incident() and Mesh::end_incident. These
+/// functions take an entity and the dimension of the sought incident entities as parameters.
+///
+/// The concept of incident entities encompass several relations that would normally be
+/// viewed as separate. When the dimension of the incident entities is smaller than that of
+/// the input entity, the incidence iteration will go over sub-entities of the entity. For
+/// instance, given a three-dimensional cell, and incidence dimension 1, the incidence iteration
+/// will traverse the edges of the cell. When the incidence dimension is larger than the dimension
+/// of the entity, it is conversely the higher-dimensional entities containing the entity that
+/// will be visited. As an example, traversing the incident entities of dimension 3 of an edge will
+/// yield all cells (in a 3d mesh) containing that edge.
+///
+/// When the dimensions are equal, the incidence relation is really a neighborhood relation.
+/// The neighborhood of an entity consists of those entities of the same dimension that share at least
+/// one vertex with the entity. Note that this definition of neighborhood does not directly allow the traversal of
+/// e.g. the cells sharing an edge with a given cell. Such neighborhoods can instead be obtained through nested iteration
+/// of incidence relations of different dimensions.
+///
+/// The incidence relations described so far cover all types of incidence iteration, except the case of the vertices
+/// (dimension 0) incident to a given vertex. This would be defined as those vertices contained in at least one cell
+/// that also contains the current vertex.However, in the current implementation of the Mesh interface,
+/// this kind of iteration is not available, since it does not seem to be very useful.
+///
+/// It is possible to sub-divide, or refine, the cells in a Mesh. Each subdivision is described by a
+/// RefinementTree object, and one of Mesh::refine() functions takes as argument a map that associates a RefinementTree with
+/// each cell that should be refined. The function then creates a new Mesh object containing the refined cells and
+/// delivers it to the caller. Using RefinementTree objects directly is the most flexible way of refining the mesh,
+/// allowing almost arbitrarily complex refinements in just one step. However, the creation of the RefinementTree objects can
+/// be somewhat involved, and hence the interface also has two overloaded convenience functions for refinement.
+/// Calling Mesh::refine() without arguments produces a mesh where all the cells have been refined with the standard RefinementTree.
+/// This RefinementTree is defined for each CellType, and is typically an isotropic, uniform refinement, e.g. splitting a hexahedron
+/// into eight sub-hexahedrons. The second simplified Mesh::refine() function makes it possible to perform local refinement
+/// by specifying a list of cells to be refined. The RefinementTree used in this case again corresponds to the standard refinement.
+/// Note that it is the responsibility of the caller to free the returned Mesh objects (with the delete operator).
+///
+/// Mesh construction is handled through classes implementing the
+/// MeshBuilder interface. This interface allows for progressive
+/// construction of a concrete Mesh subtype in accordance with the
+/// Builder design pattern. Different concrete subtypes of MeshBuilder
+/// build meshes of different concrete types or in different ways.
+///
+/// Communication of mesh entities between different processes is
+/// handled through the Communicator interface. Subclasses of this
+/// abstract base class implement different types of communication,
+/// i.e. sending and receiving entities using MPI. Communication
+/// entails serialization of the entities into objects of the type
+/// EntityPackage. Such an object is created using the pack_entities()
+/// function, and can then be transmitted through the communicate()
+/// function of the Communicator interface. This function in turn
+/// returns an EntityPackage, which can be used together with a
+/// MeshBuilder to recreate a mesh with the entities on the receiving
+/// side.
+///
+///
+}
